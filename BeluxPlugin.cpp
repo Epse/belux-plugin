@@ -405,7 +405,8 @@ void BeluxPlugin::FetchAndProcessGates() {
         if (gatePlanner.gate_list[cs].gate_has_changed) {
             //---GATE Change detected------
             string message = cs + " ==> " + gatePlanner.gate_list[cs].gate;
-            DisplayUserMessage("Belux Plugin", "GATE CHANGE", message.c_str(), true, true, blink_on_gate_change, blink_on_gate_change, blink_on_gate_change);
+            DisplayUserMessage("Belux Plugin", "GATE CHANGE", message.c_str(), 
+                blink_on_gate_change, blink_on_gate_change, blink_on_gate_change, blink_on_gate_change, blink_on_gate_change);
             gatePlanner.gate_list[cs].color = RGB(50, 205, 50);
             fp.GetControllerAssignedData().SetFlightStripAnnotation(4, gate.c_str());
         }
