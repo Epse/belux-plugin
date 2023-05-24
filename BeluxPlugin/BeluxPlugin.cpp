@@ -41,7 +41,7 @@ ProcedureAssigner* procedureAssigner;
 map<string, vector<string>> activeDepRunways;
 map<string, vector<string>> activeArrRunways;
 
-int liege_QNH = 0;
+map<string, int> QNH{{"EBLG", 0}, {"EBBR", 0}, {"EBOS", 0}};
 
 BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY_PLUGIN_NAME, MY_PLUGIN_VERSION,
                                          MY_PLUGIN_DEVELOPER, MY_PLUGIN_COPYRIGHT)
@@ -264,9 +264,25 @@ void BeluxPlugin::ProcessFlightPlans()
 		{
 			//Saftey check: only set CFL once
 			int CFL = 0;
-			if (dep_airport == "EBBR" || dep_airport == "EBOS")
+			if (dep_airport == "EBBR" || dep_airport == "EBOS" || dep_airport == "EBLG")
 			{
-				CFL = 6000;
+				if (QNH[dep_airport] == 0)
+				{
+					ProcessMETAR(dep_airport, GetAirportInfo(dep_airport));
+				}
+
+				if (QNH[dep_airport] > 995)
+				{
+					CFL = 6000;
+				}
+				else if (QNH[dep_airport] > 960)
+				{
+					CFL = 7000;
+				}
+				else
+				{
+					CFL = 8000;
+				}
 			}
 			else if (dep_airport == "ELLX" || dep_airport == "EBCI")
 			{
@@ -275,20 +291,6 @@ void BeluxPlugin::ProcessFlightPlans()
 			else if (dep_airport == "EBAW" || dep_airport == "EBKT")
 			{
 				CFL = 3000;
-			}
-			else if (dep_airport == "EBLG")
-			{
-				if (liege_QNH == 0)
-					ProcessMETAR("EBLG", GetAirportInfo("EBLG"));
-
-				if (liege_QNH != 0 && liege_QNH < 995)
-				{
-					CFL = 6000;
-				}
-				else
-				{
-					CFL = 5000;
-				}
 			}
 
 			if (CFL > 0 && fp.GetFlightPlanData().GetFinalAltitude() > CFL && fp.GetControllerAssignedData().
@@ -314,33 +316,22 @@ void BeluxPlugin::OnNewMetarReceived(const char* sStation, const char* sFullMeta
 {
 	if (function_set_initial_climb)
 	{
-		if (sStation == "EBLG")
-		{
-			string metar = sFullMetar;
-			ProcessMETAR("EBLG", metar);
-		}
+		string metar = sFullMetar;
+		ProcessMETAR("EBLG", metar);
 	}
 }
 
 void BeluxPlugin::ProcessMETAR(string airport, string metar)
 {
-	if (airport == "EBLG")
-	{
-		try
-		{
-			size_t pos = metar.find("Q") + 1;
-			liege_QNH = stoi(metar.substr(pos, 4));
-			if (DEBUG_print)
-			{
-				char buffer[50];
-				sprintf_s(buffer, "SET EBLG QNH Q%d", liege_QNH);
-				DisplayUserMessage("Belux Plugin", "CFL setter", buffer, true, true, true, false, false);
-			}
-		}
-		catch (const exception& e)
-		{
-		}
+    /*
+    This does make us save too many METARs, but let's not get too bothered with that, it's a few extra bytes.
+    */
+	try {
+		const size_t pos = metar.find("Q") + 1;
+		QNH[airport] = stoi(metar.substr(pos, 4));
+		printDebugMessage("CFL", "SET " + airport + " Q" + to_string(QNH[airport]));
 	}
+	catch (const exception& e) {}
 }
 
 void BeluxPlugin::OnFunctionCall(int FunctionId, const char* sItemString, POINT Pt, RECT Area)
@@ -496,7 +487,8 @@ void BeluxPlugin::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget,
 				|| string(FlightPlan.GetFlightPlanData().GetSidName()) != suggestion.sid)
 			{
 				(*pColorCode) = EuroScopePlugIn::TAG_COLOR_INFORMATION;
-			} else
+			}
+			else
 			{
 				(*pColorCode) = EuroScopePlugIn::TAG_COLOR_NON_CONCERNED;
 			}
