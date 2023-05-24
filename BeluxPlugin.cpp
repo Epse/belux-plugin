@@ -121,6 +121,10 @@ void BeluxPlugin::loadJSONconfig() {
         if (document.Parse<0>(ss.str().c_str()).HasParseError()) {
             AfxMessageBox("An error parsing Belux configuration occurred.\nOnce fixed, reload the config by typing '.belux reload'", MB_OK);
         }
+        if (document.HasMember("debug_mode")) {
+            DEBUG_print = document["debug_mode"].GetBool();
+            printDebugMessage("config", "debug mode " + string(DEBUG_print ? "enabled" : "disabled"));
+        }
         if (document.HasMember("API_timeout")) {
             timeout_value = document["API_timeout"].GetInt();
             printDebugMessage("config", "API timeout to " + std::to_string(timeout_value));
@@ -129,10 +133,7 @@ void BeluxPlugin::loadJSONconfig() {
             blink_on_gate_change = document["blink_on_gate_change"].GetBool();
             printDebugMessage("config", "Blinking on Gate Change " + string(blink_on_gate_change ? "enabled" : "disabled"));
         }
-        if (document.HasMember("debug_mode")) {
-            DEBUG_print = document["debug_mode"].GetBool();
-            printDebugMessage("config", "debug mode " + string(DEBUG_print ? "enabled" : "disabled"));
-        }
+        else { printDebugMessage("config", "No blinking on gate change"); }
         if (document.HasMember("functionalities")) {
             if (document["functionalities"].GetObject().HasMember("fetch_gates")) {
                 function_fetch_gates = document["functionalities"].GetObject()["fetch_gates"].GetBool();
