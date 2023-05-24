@@ -13,6 +13,7 @@ using namespace EuroScopePlugIn;
 using boost::asio::ip::tcp;
 
 bool DEBUG_print = false;
+bool blink_on_gate_change = true;
 bool function_fetch_gates = true;
 bool function_set_initial_climb = true;
 bool function_mach_visualisation = true;
@@ -123,6 +124,10 @@ void BeluxPlugin::loadJSONconfig() {
         if (document.HasMember("API_timeout")) {
             timeout_value = document["API_timeout"].GetInt();
             printDebugMessage("config", "API timeout to " + std::to_string(timeout_value));
+        }
+        if (document.HasMember("blink_on_gate_change")) {
+            blink_on_gate_change = document["blink_on_gate_change"].GetBool();
+            printDebugMessage("config", "Blinking on Gate Change " + string(blink_on_gate_change ? "enabled" : "disabled"));
         }
         if (document.HasMember("debug_mode")) {
             DEBUG_print = document["debug_mode"].GetBool();
@@ -399,7 +404,12 @@ void BeluxPlugin::FetchAndProcessGates() {
         if (gatePlanner.gate_list[cs].gate_has_changed) {
             //---GATE Change detected------
             string message = cs + " ==> " + gatePlanner.gate_list[cs].gate;
-            DisplayUserMessage("Belux Plugin", "GATE CHANGE", message.c_str(), true, true, true, true, true);
+            if (blink_on_gate_change) {
+                DisplayUserMessage("Belux Plugin", "GATE CHANGE", message.c_str(), true, true, true, true, true);
+            }
+            else {
+                DisplayUserMessage("Belux Plugin", "GATE CHANGE", message.c_str(), true, true, true, false, false);
+            }
             gatePlanner.gate_list[cs].color = RGB(50, 205, 50);
             fp.GetControllerAssignedData().SetFlightStripAnnotation(4, gate.c_str());
         }
