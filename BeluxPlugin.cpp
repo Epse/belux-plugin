@@ -405,12 +405,7 @@ void BeluxPlugin::FetchAndProcessGates() {
         if (gatePlanner.gate_list[cs].gate_has_changed) {
             //---GATE Change detected------
             string message = cs + " ==> " + gatePlanner.gate_list[cs].gate;
-            if (blink_on_gate_change) {
-                DisplayUserMessage("Belux Plugin", "GATE CHANGE", message.c_str(), true, true, true, true, true);
-            }
-            else {
-                DisplayUserMessage("Belux Plugin", "GATE CHANGE", message.c_str(), true, true, true, false, false);
-            }
+            DisplayUserMessage("Belux Plugin", "GATE CHANGE", message.c_str(), true, true, blink_on_gate_change, blink_on_gate_change, blink_on_gate_change);
             gatePlanner.gate_list[cs].color = RGB(50, 205, 50);
             fp.GetControllerAssignedData().SetFlightStripAnnotation(4, gate.c_str());
         }
@@ -735,6 +730,7 @@ bool BeluxPlugin::OnCompileCommand(const char* sCommandLine) {
         printMessage("-", ".belux timeout <integer> - set the API timeout value");
         printMessage("-", ".belux refreshgates      - refresh gates from the API");
         printMessage("-", ".belux setgate <gate>    - assign gate to selected aircraft");
+        printMessage("-", ".belux alert_gates       - toggle flashing on gate reassignment");
         return true;
     }
 
@@ -840,6 +836,13 @@ bool BeluxPlugin::OnCompileCommand(const char* sCommandLine) {
     {
         if (function_fetch_gates)
             FetchAndProcessGates();
+        return true;
+    }
+
+    if (boost::algorithm::starts_with(".belux alert_gates", sCommandLine)) {
+        blink_on_gate_change = !blink_on_gate_change;
+        printMessage("Functionalities", "Alert on gate change: " + string(blink_on_gate_change ? "on" : "off"));
+
         return true;
     }
     return false;
