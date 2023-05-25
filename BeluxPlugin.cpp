@@ -13,7 +13,7 @@ using namespace EuroScopePlugIn;
 using boost::asio::ip::tcp;
 
 bool DEBUG_print = false;
-bool blink_on_gate_change = true;
+UINT8 on_gate_change = 2; // 2: blink. 1: quiet. 0: none
 bool function_fetch_gates = true;
 bool function_set_initial_climb = true;
 bool function_mach_visualisation = true;
@@ -129,11 +129,26 @@ void BeluxPlugin::loadJSONconfig() {
             timeout_value = document["API_timeout"].GetInt();
             printDebugMessage("config", "API timeout to " + std::to_string(timeout_value));
         }
-        if (document.HasMember("blink_on_gate_change")) {
-            blink_on_gate_change = document["blink_on_gate_change"].GetBool();
-            printDebugMessage("config", "Blinking on Gate Change " + string(blink_on_gate_change ? "enabled" : "disabled"));
+        if (document.HasMember("on_gate_change")) {
+            // TODO: now why don't you work from the start....
+            const string ogc = document["on_gate_change"].GetString();
+            if (ogc == "blink") {
+                on_gate_change = 2;
+                printDebugMessage("config", "Alert on gate change: on");
+            }
+            else if (ogc == "quiet") {
+                on_gate_change = 1;
+                printDebugMessage("config", "Alert on gate change: quietly");
+            }
+            else if (ogc == "none") {
+                on_gate_change = 0;
+                printDebugMessage("config", "Alert on gate change: off");
+            }
+            else {
+                printDebugMessage("config", "Alert on gate change: invalid (default to on)");
+            }
         }
-        else { printDebugMessage("config", "No blinking on gate change"); }
+        else { printDebugMessage("config", "No alert on gate change config."); }
         if (document.HasMember("functionalities")) {
             if (document["functionalities"].GetObject().HasMember("fetch_gates")) {
                 function_fetch_gates = document["functionalities"].GetObject()["fetch_gates"].GetBool();
@@ -405,8 +420,11 @@ void BeluxPlugin::FetchAndProcessGates() {
         if (gatePlanner.gate_list[cs].gate_has_changed) {
             //---GATE Change detected------
             string message = cs + " ==> " + gatePlanner.gate_list[cs].gate;
-            DisplayUserMessage("Belux Plugin", "GATE CHANGE", message.c_str(), 
-                blink_on_gate_change, blink_on_gate_change, blink_on_gate_change, blink_on_gate_change, blink_on_gate_change);
+            if (on_gate_change) {
+                const bool blink = on_gate_change > 1;
+                DisplayUserMessage("Belux Plugin", "GATE CHANGE", message.c_str(), 
+                    blink, blink, blink, blink, blink);
+            }
             gatePlanner.gate_list[cs].color = RGB(50, 205, 50);
             fp.GetControllerAssignedData().SetFlightStripAnnotation(4, gate.c_str());
         }
@@ -724,14 +742,14 @@ bool BeluxPlugin::OnCompileCommand(const char* sCommandLine) {
     string buffer{ sCommandLine };
     if (boost::algorithm::starts_with(sCommandLine, ".belux help")) {
         printMessage("-", "Belux CLI");
-        printMessage("-", ".belux reload            - reload json config");
-        printMessage("-", ".belux gate(on/off)      - enable/disable gate assignment");
-        printMessage("-", ".belux climb(on/off)     - enable/disable initial climb assignment");
-        printMessage("-", ".belux mach(on/off)      - enable/disable mach visualisation");
-        printMessage("-", ".belux timeout <integer> - set the API timeout value");
-        printMessage("-", ".belux refreshgates      - refresh gates from the API");
-        printMessage("-", ".belux setgate <gate>    - assign gate to selected aircraft");
-        printMessage("-", ".belux alert_gates       - toggle flashing on gate reassignment");
+        printMessage("-", ".belux reload                          - reload json config");
+        printMessage("-", ".belux gate(on/off)                    - enable/disable gate assignment");
+        printMessage("-", ".belux climb(on/off)                   - enable/disable initial climb assignment");
+        printMessage("-", ".belux mach(on/off)                    - enable/disable mach visualisation");
+        printMessage("-", ".belux timeout <integer>               - set the API timeout value");
+        printMessage("-", ".belux refreshgates                    - refresh gates from the API");
+        printMessage("-", ".belux setgate <gate>                  - assign gate to selected aircraft");
+        printMessage("-", ".belux alert_gates <blink|quiet|none>  - toggle flashing on gate reassignment");
         return true;
     }
 
@@ -833,16 +851,30 @@ bool BeluxPlugin::OnCompileCommand(const char* sCommandLine) {
             return false;
         }
     }
-    if (boost::algorithm::starts_with(".belux refreshgates", sCommandLine) || boost::algorithm::starts_with(sCommandLine, ".rf"))
+    if (boost::algorithm::starts_with(sCommandLine, ".belux refreshgates") || boost::algorithm::starts_with(sCommandLine, ".rf"))
     {
         if (function_fetch_gates)
             FetchAndProcessGates();
         return true;
     }
 
-    if (boost::algorithm::starts_with(".belux alert_gates", sCommandLine)) {
-        blink_on_gate_change = !blink_on_gate_change;
-        printMessage("Functionalities", "Alert on gate change: " + string(blink_on_gate_change ? "on" : "off"));
+    if (boost::algorithm::starts_with(sCommandLine, ".belux alert_gates")) {
+        string value = buffer.erase(0, string(".belux alert_gates ").length());
+        if (value == "blink") {
+            on_gate_change = 2;
+            printMessage("Functionalities", "Alert on gate change: blink");
+        }
+        else if (value == "quiet") {
+            on_gate_change = 1;
+            printMessage("Functionalities", "Alert on gate change: quiet");
+        }
+        else if (value == "none") {
+            on_gate_change = 0;
+            printMessage("Functionalities", "Alert on gate change: none");
+        }
+        else {
+            printMessage("Functionalities", "Alert on gate change: invalid (default blink)");
+        }
 
         return true;
     }
