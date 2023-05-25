@@ -826,7 +826,8 @@ bool BeluxPlugin::OnCompileCommand(const char* sCommandLine) {
     }
     if (boost::algorithm::starts_with(sCommandLine, ".belux rwysidon") || boost::algorithm::starts_with(sCommandLine, ".belux rwysidoff"))
     {
-        function_check_runway_and_sid = (buffer.erase(0, 13) == "on");
+        //function_check_runway_and_sid = (buffer.erase(0, 13) == "on");
+        function_check_runway_and_sid = false; // Not ready for release
         printMessage("Functionalities", "RWY and SID assignment " + string(function_check_runway_and_sid ? "enabled" : "disabled"));
         return true;
     }
