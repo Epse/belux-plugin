@@ -17,8 +17,8 @@
 
 
 #define MY_PLUGIN_NAME      "Belux"
-#define MY_PLUGIN_VERSION   "1.1.3"
-#define MY_PLUGIN_DEVELOPER "Nicola Macoir for Belux vACC"
+#define MY_PLUGIN_VERSION   "1.1.4"
+#define MY_PLUGIN_DEVELOPER "Nicola Macoir, Stef Pletinck for Belux vACC"
 #define MY_PLUGIN_COPYRIGHT "GPL v3"
 #define MY_PLUGIN_VIEW_AVISO  "Belux vACC"
 

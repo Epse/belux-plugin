@@ -45,7 +45,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
     <UseOfMfc>Dynamic</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -93,13 +93,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>lib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\EuroScope\PlugInEnvironment;C:\Users\Stef\Documents\Repositories\belux-euroscope-plugin\lib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>.\BeluxPlugin.def</ModuleDefinitionFile>
-      <AdditionalDependencies>lib\EuroScopePlugInDll.lib;lib\libssl_static.lib;lib\libcrypto_static.lib;lib\libcurld.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lib\libssl_static.lib;lib\libcrypto_static.lib;lib\libcurld.lib;C:\Program Files (x86)\EuroScope\PlugInEnvironment\EuroScopePlugInDll.lib;C:\Program Files (x86)\EuroScope\EuroScopePlugInDll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -111,7 +111,8 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(ProjectName).dll" "C:\Users\nicol\OneDrive\Documenten\EuroScope\Plugins\Belux_DEV\Belux.dll"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -121,10 +122,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;_DEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\EuroScope\PlugInEnvironment;C:\Users\Stef\Documents\Repositories\belux-euroscope-plugin\lib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>.\BeluxPlugin.def</ModuleDefinitionFile>
+      <AdditionalDependencies>lib\libssl_static.lib;lib\libcrypto_static.lib;lib\libcurld.lib;C:\Program Files (x86)\EuroScope\PlugInEnvironment\EuroScopePlugInDll.lib;C:\Program Files (x86)\EuroScope\EuroScopePlugInDll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -145,7 +148,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>lib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\EuroScope\PlugInEnvironment;C:\Users\Stef\Documents\Repositories\belux-euroscope-plugin\lib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
@@ -153,7 +156,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ModuleDefinitionFile>.\BeluxPlugin.def</ModuleDefinitionFile>
-      <AdditionalDependencies>lib\EuroScopePlugInDll.lib;lib\libssl_static.lib;lib\libcrypto_static.lib;lib\libcurld.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lib\libssl_static.lib;lib\libcrypto_static.lib;lib\libcurld.lib;C:\Program Files (x86)\EuroScope\PlugInEnvironment\EuroScopePlugInDll.lib;C:\Program Files (x86)\EuroScope\EuroScopePlugInDll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -165,7 +168,8 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(ProjectName).dll" "C:\Users\nicol\OneDrive\Documenten\EuroScope\Plugins\Belux_DEV\Belux.dll"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -177,12 +181,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\EuroScope\PlugInEnvironment;C:\Users\Stef\Documents\Repositories\belux-euroscope-plugin\lib\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ModuleDefinitionFile>.\BeluxPlugin.def</ModuleDefinitionFile>
+      <AdditionalDependencies>lib\libssl_static.lib;lib\libcrypto_static.lib;lib\libcurld.lib;C:\Program Files (x86)\EuroScope\PlugInEnvironment\EuroScopePlugInDll.lib;C:\Program Files (x86)\EuroScope\EuroScopePlugInDll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -208,9 +214,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="BeluxPlugin.def" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Program Files (x86)\EuroScope\EuroScopePlugIn.h" />
+    <ClInclude Include="..\..\..\..\..\Program Files (x86)\EuroScope\PlugInEnvironment\EuroScopePlugIn.h" />
     <ClInclude Include="BeluxGateEntry.hpp" />
     <ClInclude Include="BeluxGatePlanner.hpp" />
     <ClInclude Include="BeluxPlugin.hpp" />
@@ -225,5 +232,14 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="packages\boost.1.82.0\build\boost.targets" Condition="Exists('packages\boost.1.82.0\build\boost.targets')" />
+    <Import Project="packages\openssl-vc142.1.1.0\build\native\openssl-vc142.targets" Condition="Exists('packages\openssl-vc142.1.1.0\build\native\openssl-vc142.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\boost.1.82.0\build\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\boost.1.82.0\build\boost.targets'))" />
+    <Error Condition="!Exists('packages\openssl-vc142.1.1.0\build\native\openssl-vc142.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\openssl-vc142.1.1.0\build\native\openssl-vc142.targets'))" />
+  </Target>
 </Project>
