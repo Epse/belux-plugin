@@ -11,7 +11,7 @@ SidAllocation::SidAllocation()
 	entries = new std::vector<SidEntry>();
 }
 
-void SidAllocation::parse_string(const std::string &input) const
+void SidAllocation::parse_string(const std::string& input) const
 {
 	std::istringstream iss(input);
 	entries->clear();
@@ -20,7 +20,6 @@ void SidAllocation::parse_string(const std::string &input) const
 	{
 		if (auto maybe_entry = parse_line(line); maybe_entry.has_value())
 			entries->push_back(maybe_entry.value());
-
 	}
 }
 
@@ -35,7 +34,9 @@ void SidAllocation::parse_string(const std::string &input) const
  * \param engine_count self-explanatory
  * \return A SID entry if one matches the provided rules
  */
-std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::string& exit_point, const std::string& ades, const int engine_count, const std::string& runway) const
+std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::string& exit_point,
+                                            const std::string& ades, const int engine_count,
+                                            const std::string& runway) const
 {
 	for (auto i = entries->begin(); i != entries->end(); ++i)
 	{
@@ -80,18 +81,18 @@ std::optional<SidEntry> SidAllocation::parse_line(const std::string& line) const
 	if (columns.size() != 12)
 		return {};
 
-	SidEntry entry;
-
-	entry.exit_point = boost::trim_copy(columns[0]);
-	entry.aircraft_class = static_cast<uint8_t>(std::stoi(columns[2]));
-	entry.from_time = boost::trim_copy(columns[3]);
-	entry.to_time = boost::trim_copy(columns[4]);
-	entry.sid = boost::trim_copy(columns[5]);
-	entry.adep = boost::trim_copy(columns[6]);
-	entry.rwy = boost::trim_copy(columns[7]);
-	entry.cfl = boost::trim_copy(columns[8]);
-	entry.ades = boost::trim_copy(columns[9]);
-	entry.tsa = boost::trim_copy(columns[10]);
+	 SidEntry entry = {
+		boost::trim_copy(columns[5]),
+		boost::trim_copy(columns[0]),
+		static_cast<uint8_t>(std::stoi(columns[2])),
+		boost::trim_copy(columns[3]),
+		boost::trim_copy(columns[4]),
+		boost::trim_copy(columns[6]),
+		boost::trim_copy(columns[9]),
+		boost::trim_copy(columns[7]),
+		boost::trim_copy(columns[8]),
+		boost::trim_copy(columns[10]),
+	};
 
 	return entry;
 }

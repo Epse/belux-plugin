@@ -22,10 +22,12 @@ class SidAllocation
 {
 public:
 	SidAllocation();
-	void parse_string(const std::string &input) const;
-	std::optional<SidEntry> find(const std::string& adep, const std::string& exit_point, const std::string& ades, const int engine_count, const std::string& runway) const;
+	void parse_string(const std::string& input) const;
+	std::optional<SidEntry> find(const std::string& adep, const std::string& exit_point, const std::string& ades,
+	                             const int engine_count, const std::string& runway) const;
+
 private:
-	std::vector<SidEntry> *entries;
+	std::vector<SidEntry>* entries;
 	std::optional<SidEntry> parse_line(const std::string& line) const;
 	bool does_ades_match(const std::string& reference, const std::string& in) const;
 };
