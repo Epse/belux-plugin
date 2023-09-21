@@ -36,7 +36,7 @@ public:
     double haversine(double lat1, double lon1, double lat2, double lon2);
     tuple<double, double> calculate_mach(string callsign, int flightlevel, int gs, double hdg, double lat, double lon);
 
-    string http_download(string url);
+    static string http_download(string url);
     string fetch_weather_file();
 
     string plugin_path;

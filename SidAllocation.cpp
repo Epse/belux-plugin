@@ -11,7 +11,7 @@ SidAllocation::SidAllocation()
 	entries = new std::vector<SidEntry>();
 }
 
-void SidAllocation::parse_string(const std::string& input) const
+size_t SidAllocation::parse_string(const std::string& input) const
 {
 	std::istringstream iss(input);
 	entries->clear();
@@ -21,19 +21,10 @@ void SidAllocation::parse_string(const std::string& input) const
 		if (auto maybe_entry = parse_line(line); maybe_entry.has_value())
 			entries->push_back(maybe_entry.value());
 	}
+
+	return entries->size();
 }
 
-/**
- * \brief Attempts to select a SID based on provided data.
- * This *does not* attempt to do the WTC / RWY matching, this is out of scope. We do match against runways provided.
- * TSA status is not yet checked, we would need a LARA validation for that.
- * We return the first matching SID.
- * \param adep Departure ICAO
- * \param exit_point First FIX in flightplan, expected SID exit point
- * \param ades Destination ICAO
- * \param engine_count self-explanatory
- * \return A SID entry if one matches the provided rules
- */
 std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::string& exit_point,
                                             const std::string& ades, const int engine_count,
                                             const std::string& runway) const
@@ -54,7 +45,7 @@ std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::
 		if (entry.rwy != runway)
 			continue;
 
-		// TODO: TSA status
+		// TODO: TSA status, time
 		return entry;
 	}
 
@@ -97,14 +88,6 @@ std::optional<SidEntry> SidAllocation::parse_line(const std::string& line) const
 	return entry;
 }
 
-/**
- * \brief Checks if the given ADES matches the entry ADES given under reference.
- * These references may contain a * prefix, indicating they will match any ADES that is not the provided one,
- * or an = prefix indicating they match ONLY the provided one.
- * \param reference An ADES spec consisting of a one-character prefix and a four-character ICAO code
- * \param in ICAO code to check against reference
- * \return Whether the ADES rules match, as defined above.
- */
 bool SidAllocation::does_ades_match(const std::string& reference, const std::string& in) const
 {
 	if (reference.at(0) == '=')

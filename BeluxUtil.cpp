@@ -53,6 +53,7 @@ string BeluxUtil::http_download(string url) {
             throw exception(string("failed fetching weather file. Error code: " + to_string(int(res))).c_str());
         }
     }
+    return "";
 }
 
 string BeluxUtil::fetch_weather_file() {
