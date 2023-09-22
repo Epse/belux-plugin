@@ -90,6 +90,9 @@ std::optional<SidEntry> SidAllocation::parse_line(const std::string& line) const
 
 bool SidAllocation::does_ades_match(const std::string& reference, const std::string& in) const
 {
+	if (reference.empty())
+		return true;
+
 	if (reference.at(0) == '=')
 		return reference.substr(1, 4) == in;
 

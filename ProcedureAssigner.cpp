@@ -96,9 +96,13 @@ void ProcedureAssigner::process_flight_plan(const EuroScopePlugIn::CFlightPlan& 
 		}
 	}
 
+	if (sid_fix.empty())
+		return;
+
 	const std::string runway = get_runway(flight_plan, sid_fix);
 
 	const auto flight_plan_data = flight_plan.GetFlightPlanData();
+	// FIXME: This next line segfaults
 	const auto maybe_sid = sid_allocation.find(flight_plan_data.GetOrigin(),
 	                                           sid_fix,
 	                                           flight_plan_data.GetDestination(),
