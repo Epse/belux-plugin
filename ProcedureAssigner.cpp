@@ -61,7 +61,7 @@ std::string ProcedureAssigner::get_runway(const EuroScopePlugIn::CFlightPlan& fl
 			return "25R";
 		}
 
-		if (sid_fix == "ELSIK" || sid_fix == "NIK" || sid_fix == "DENUT" || sid_fix == "KOK" || sid_fix == "CIV")
+		if (sid_fix == "ELSIK" || sid_fix == "NIK" || sid_fix == "HELEN" || sid_fix == "DENUT" || sid_fix == "KOK" || sid_fix == "CIV")
 		{
 			return "25R";
 		}
@@ -102,7 +102,6 @@ void ProcedureAssigner::process_flight_plan(const EuroScopePlugIn::CFlightPlan& 
 	const std::string runway = get_runway(flight_plan, sid_fix);
 
 	const auto flight_plan_data = flight_plan.GetFlightPlanData();
-	// FIXME: This next line segfaults
 	const auto maybe_sid = sid_allocation.find(flight_plan_data.GetOrigin(),
 	                                           sid_fix,
 	                                           flight_plan_data.GetDestination(),
