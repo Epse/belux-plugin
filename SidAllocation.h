@@ -3,14 +3,21 @@
 #include <optional>
 #include <cstdint>
 #include <vector>
+#include <ctime>
+
+struct TimeActivation
+{
+	bool has_weekdays;
+	tm tm_start;
+	tm tm_end;
+};
 
 struct SidEntry
 {
 	std::string sid;
 	std::string exit_point;
 	uint8_t aircraft_class;
-	std::string from_time; // Temporary, should be a parsed form later
-	std::string to_time;
+	std::optional<TimeActivation> time_activation;
 	std::string adep;
 	std::string ades; // Should parse the prefixes of = and * too, later
 	std::string rwy;
@@ -46,6 +53,8 @@ public:
 private:
 	std::vector<SidEntry>* entries;
 	std::optional<SidEntry> parse_line(const std::string& line) const;
+	std::optional<TimeActivation> parse_time_activation(const std::string& line_start, const std::string& line_end) const;
+	std::optional<std::pair<bool, tm>> parse_activation_time_line(const std::string& line) const;
 	/**
 	 * \brief Checks if the given ADES matches the entry ADES given under reference.
 	 * These references may contain a * prefix, indicating they will match any ADES that is not the provided one,
@@ -55,4 +64,5 @@ private:
 	 * \return Whether the ADES rules match, as defined above.
 	 */
 	bool does_ades_match(const std::string& reference, const std::string& in) const;
+	static bool does_activation_match(const std::optional<TimeActivation>& reference, const tm& now);
 };

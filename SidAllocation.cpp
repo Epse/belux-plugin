@@ -29,9 +29,14 @@ std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::
                                             const std::string& ades, const int engine_count,
                                             const std::string& runway) const
 {
-	for (auto i = entries->begin(); i != entries->end(); ++i)
+	time_t rawtime;
+	time(&rawtime);
+	// Get a tm struct for now in UTC
+	struct tm now;
+	gmtime_s(&now, &rawtime);
+
+	for (auto entry : *entries)
 	{
-		auto entry = *i;
 		if (entry.adep != adep)
 			continue;
 		if (entry.exit_point != exit_point)
@@ -44,8 +49,10 @@ std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::
 			continue;
 		if (entry.rwy != runway)
 			continue;
+		if (!does_activation_match(entry.time_activation, now))
+			continue;
 
-		// TODO: TSA status, time
+		// TODO: TSA status
 		return entry;
 	}
 
@@ -72,12 +79,12 @@ std::optional<SidEntry> SidAllocation::parse_line(const std::string& line) const
 	if (columns.size() != 12)
 		return {};
 
-	 SidEntry entry = {
+	SidEntry entry = {
 		boost::trim_copy(columns[5]),
 		boost::trim_copy(columns[0]),
 		static_cast<uint8_t>(std::stoi(columns[2])),
-		boost::trim_copy(columns[3]),
-		boost::trim_copy(columns[4]),
+		parse_time_activation(boost::trim_copy(columns[3]),
+		                      boost::trim_copy(columns[4])),
 		boost::trim_copy(columns[6]),
 		boost::trim_copy(columns[9]),
 		boost::trim_copy(columns[7]),
@@ -86,6 +93,82 @@ std::optional<SidEntry> SidAllocation::parse_line(const std::string& line) const
 	};
 
 	return entry;
+}
+
+std::optional<TimeActivation> SidAllocation::parse_time_activation(const std::string& line_start,
+                                                                   const std::string& line_end) const
+{
+	const auto parsed_start = parse_activation_time_line(line_start);
+	const auto parsed_end = parse_activation_time_line(line_end);
+
+	if (!parsed_start.has_value() || !parsed_end.has_value())
+		return {};
+
+	const bool has_weekdays = parsed_start.value().first && parsed_end.value().first;
+	return TimeActivation{
+		has_weekdays,
+		parsed_start.value().second,
+		parsed_end.value().second,
+	};
+}
+
+/**
+ * \brief Extracts a singular activation time entry
+ * \param line An entry
+ * \return bool indicating presence of weekday, tm for other data
+ */
+std::optional<std::pair<bool, tm>> SidAllocation::parse_activation_time_line(const std::string& line) const
+{
+	// Just a time is 4 characters,
+	if (line.size() < 4)
+		return {};
+
+	int hours = 0;
+	int minutes = 0;
+	int wday = 0;
+	bool has_wday = false;
+	std::string time = line;
+
+	const auto space_pos = line.find(' ');
+	// If a space is found, there _has_ to be content after it, due to trimmed
+	if (space_pos != std::string::npos)
+	{
+		const std::string day_str = line.substr(0, space_pos);
+		time = line.substr(space_pos + 1);
+
+		has_wday = true;
+		// Weird C wday indexing...
+		if (day_str == "SUNDAY")
+			wday = 0;
+		else if (day_str == "MONDAY")
+			wday = 1;
+		else if (day_str == "TUESDAY")
+			wday = 2;
+		else if (day_str == "WEDNESDAY")
+			wday = 3;
+		else if (day_str == "THURSDAY")
+			wday = 4;
+		else if (day_str == "FRIDAY")
+			wday = 5;
+		else if (day_str == "SATURDAY")
+			wday = 6;
+		else
+			has_wday = false;
+	}
+
+	const int numeric_time = std::stoi(time);
+	hours = numeric_time / 100;
+	minutes = numeric_time % 100;
+
+	tm tm{};
+	tm.tm_hour = hours;
+	tm.tm_min = minutes;
+	tm.tm_wday = wday;
+
+	return std::pair{
+		has_wday,
+		tm,
+	};
 }
 
 bool SidAllocation::does_ades_match(const std::string& reference, const std::string& in) const
@@ -100,4 +183,42 @@ bool SidAllocation::does_ades_match(const std::string& reference, const std::str
 		return reference.substr(1, 4) != in;
 
 	return false;
+}
+
+bool SidAllocation::does_activation_match(const std::optional<TimeActivation>& reference, const tm& now)
+{
+	if (!reference.has_value())
+		return true; // Always active
+
+	const auto start = reference.value().tm_start;
+	const auto end = reference.value().tm_end;
+
+	const bool past_start_time = now.tm_hour > start.tm_hour
+		|| (now.tm_hour == start.tm_hour && now.tm_min >= start.tm_min);
+	const bool before_end_time = now.tm_hour < end.tm_hour
+		|| (now.tm_hour == end.tm_hour && now.tm_min <= end.tm_min);
+
+
+	if (reference.value().has_weekdays && start.tm_wday != end.tm_wday)
+	{
+		if (now.tm_wday == start.tm_wday)
+			return past_start_time;
+
+		if (now.tm_wday == end.tm_wday)
+			return before_end_time;
+
+		if (start.tm_wday < end.tm_wday)
+		{
+			return now.tm_wday > start.tm_wday && now.tm_wday < end.tm_wday;
+		}
+
+		return now.tm_wday > start.tm_wday || now.tm_wday < end.tm_wday;
+	}
+
+	// Do the time
+	// Simplified, I should in theory also compare the minutes.
+	if (start.tm_hour > end.tm_hour)
+		return past_start_time || before_end_time;
+
+	return past_start_time && before_end_time;
 }

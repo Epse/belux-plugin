@@ -85,7 +85,7 @@ void ProcedureAssigner::process_flight_plan(const EuroScopePlugIn::CFlightPlan& 
 
 	const auto route = flight_plan.GetExtractedRoute();
 	std::string sid_fix;
-	const std::string sid_fixes[] = {"CIV", "NIK", "LNO"};
+	const std::string sid_fixes[] = {"CIV", "NIK", "LNO", "DENUT", "KOK", "SPI", "HELEN", "PITES", "SOPOK"};
 	for (int i = 0; i < route.GetPointsNumber(); i++)
 	{
 		std::string fix = route.GetPointName(i);
