@@ -119,7 +119,8 @@ void ProcedureAssigner::process_flight_plan(const EuroScopePlugIn::CFlightPlan& 
 
 size_t ProcedureAssigner::fetch_sid_allocation() const
 {
-	const std::string allocation = BeluxUtil::http_download(
+	const std::string url = "https://beluxvacc.org/files/navigation_department/datafiles/SID_ALLOCATION.txt";
+	const std::string allocation = BeluxUtil::https_fetch_file(
 		"https://beluxvacc.org/files/navigation_department/datafiles/SID_ALLOCATION.txt");
 	return sid_allocation.parse_string(allocation);
 }

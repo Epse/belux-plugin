@@ -45,6 +45,8 @@ public:
     map<string, tuple<tuple<double,double>, time_t>> mach_timeout;
     time_t RETENTION = 1000;
 
+    static string https_fetch_file(string url);
+
     map<string, tuple<double, double>> BeluxUtil::locations = {
         {"DVR",  {51.160,1.331}},
         {"KOK",  {51.103,2.623}},
