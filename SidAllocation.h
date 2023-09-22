@@ -21,7 +21,6 @@ struct SidEntry
 	std::string adep;
 	std::string ades; // Should parse the prefixes of = and * too, later
 	std::string rwy;
-	std::string cfl; // Need to parse this to a union of lightlevel / altitude ideally
 	std::string tsa; // Not used in EBBR, will add to others later
 };
 

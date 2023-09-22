@@ -69,7 +69,7 @@ std::optional<SidEntry> SidAllocation::parse_line(const std::string& line) const
 	 * The columns are:
 	 * P1, P2, C, From time, To time, SID, ADEP, RWY, CFL, ADES, TSA, comment
 	 * these map to the SidEntry fields of:
-	 * exit_point, none, aircraft_class, from_time, to_time, sid, adep, rwy, cfl, ades, tsa, none
+	 * exit_point, none, aircraft_class, from_time, to_time, sid, adep, rwy, none, ades, tsa, none
 	 * the `none` entries are unused columns.
 	 */
 
@@ -88,7 +88,6 @@ std::optional<SidEntry> SidAllocation::parse_line(const std::string& line) const
 		boost::trim_copy(columns[6]),
 		boost::trim_copy(columns[9]),
 		boost::trim_copy(columns[7]),
-		boost::trim_copy(columns[8]),
 		boost::trim_copy(columns[10]),
 	};
 
