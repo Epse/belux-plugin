@@ -85,21 +85,18 @@ BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY
 	{
 		printDebugMessage("API", "fetched weather file " + utils.fetch_weather_file());
 	}
-	if (function_check_runway_and_sid)
+	try
 	{
-		try
+		const auto parsed = procedureAssigner->fetch_sid_allocation();
+		printDebugMessage("SID", "Parsed SID allocations: " + std::to_string(parsed));
+		if (parsed < 1)
 		{
-			const auto parsed = procedureAssigner->fetch_sid_allocation();
-			printDebugMessage("SID", "Parsed SID allocations: " + std::to_string(parsed));
-			if (parsed < 1)
-			{
-				printMessage("SID", "Could not parse SID allocation file.");
-			}
+			printMessage("SID", "Could not parse SID allocation file.");
 		}
-		catch (exception _e)
-		{
-			printDebugMessage("SID", "Caught an exception");
-		}
+	}
+	catch (exception _e)
+	{
+		printDebugMessage("SID", "Caught an exception");
 	}
 }
 
@@ -251,7 +248,7 @@ void BeluxPlugin::ProcessFlightPlans()
 		string dep_airport = fp.GetFlightPlanData().GetOrigin();
 		string callsign = fp.GetCallsign();
 
-		if (function_check_runway_and_sid)
+		if (function_check_runway_and_sid || force_new_procedure)
 		{
 			if (procedureAssigner->process_flight_plan(fp, force_new_procedure))
 			{
@@ -322,10 +319,7 @@ void BeluxPlugin::OnFlightPlanDisconnect(CFlightPlan FlightPlan)
 	{
 		processed->erase(FlightPlan.GetCallsign());
 	}
-	if (function_check_runway_and_sid)
-	{
-		procedureAssigner->on_disconnect(FlightPlan);
-	}
+	procedureAssigner->on_disconnect(FlightPlan);
 }
 
 void BeluxPlugin::OnNewMetarReceived(const char* sStation, const char* sFullMetar)
@@ -370,11 +364,10 @@ void BeluxPlugin::OnFunctionCall(int FunctionId, const char* sItemString, POINT 
 			FetchAndProcessGates();
 		break;
 	case TAG_FUNCTION_FORCE_SID:
-		if (function_check_runway_and_sid)
-			if (!procedureAssigner->process_flight_plan(FlightPlanSelectASEL(), true))
-			{
-				printMessage("SID", "Failed to assign requested SID/RWY");
-			}
+		if (!procedureAssigner->process_flight_plan(FlightPlanSelectASEL(), true))
+		{
+			printMessage("SID", "Failed to assign requested SID/RWY");
+		}
 	}
 }
 
@@ -398,13 +391,9 @@ void BeluxPlugin::OnTimer(int Counter)
 
 void BeluxPlugin::OnAirportRunwayActivityChanged(void)
 {
-	if (function_check_runway_and_sid)
-	{
-		// TODO check if this should move to ProcedureAssigner
-		getActiveRunways("EBBR");
-		procedureAssigner->set_departure_runways(activeDepRunways);
-		procedureAssigner->reprocess_all();
-	}
+	getActiveRunways("EBBR");
+	procedureAssigner->set_departure_runways(activeDepRunways);
+	procedureAssigner->reprocess_all();
 }
 
 void BeluxPlugin::FetchAndProcessGates()
@@ -934,11 +923,8 @@ bool BeluxPlugin::OnCompileCommand(const char* sCommandLine)
 
 	if (boost::algorithm::starts_with(sCommandLine, ".belux force-sid"))
 	{
-		if (function_check_runway_and_sid)
-		{
-			procedureAssigner->reprocess_all();
-			force_new_procedure = true;
-		}
+		procedureAssigner->reprocess_all();
+		force_new_procedure = true;
 		return true;
 	}
 
