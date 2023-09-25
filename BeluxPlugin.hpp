@@ -1,6 +1,7 @@
 #pragma once
 #include "EuroScopePlugIn.h"
 #include "BeluxGatePlanner.hpp"
+#include "ProcedureAssigner.h"
 #include "BeluxUtil.hpp"
 #include <time.h>
 #include <vector>

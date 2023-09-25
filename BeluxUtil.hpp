@@ -36,7 +36,7 @@ public:
     double haversine(double lat1, double lon1, double lat2, double lon2);
     tuple<double, double> calculate_mach(string callsign, int flightlevel, int gs, double hdg, double lat, double lon);
 
-    string http_download(string url);
+    static string http_download(string url);
     string fetch_weather_file();
 
     string plugin_path;
@@ -44,6 +44,8 @@ public:
 
     map<string, tuple<tuple<double,double>, time_t>> mach_timeout;
     time_t RETENTION = 1000;
+
+    static string https_fetch_file(string url);
 
     map<string, tuple<double, double>> BeluxUtil::locations = {
         {"DVR",  {51.160,1.331}},
