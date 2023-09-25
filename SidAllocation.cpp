@@ -59,6 +59,20 @@ std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::
 	return {};
 }
 
+std::set<std::string> SidAllocation::for_airport(const std::string& adep) const
+{
+	std::set<std::string> result;
+	for (auto &entry : *entries)
+	{
+		if (entry.adep != adep)
+			continue;
+
+		result.insert(entry.sid);
+	}
+
+	return result;
+}
+
 std::optional<SidEntry> SidAllocation::parse_line(const std::string& line) const
 {
 	if (boost::algorithm::starts_with(line, "--"))

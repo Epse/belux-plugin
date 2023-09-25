@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <functional>
 #include <set>
 #include <string>
 
@@ -11,25 +12,27 @@ private:
 	const std::string airports[1] = {"EBBR"};
 	std::set<std::string>* processed;
 	std::vector<std::string>* departure_runways;
-	/**
+	std::function<void(const std::string&)> debug_printer;
+		/**
 	 * \brief Verifies if we should still process the flight plan. This checks, but does not modify the `processed` var,
 	 * ensure the caller inserts the callsign into this set.
 	 * \param flight_plan A flight plan to check
 	 * \return true if the flight plan should be processed
 	 */
-	bool should_process(const EuroScopePlugIn::CFlightPlan& flight_plan) const;
+	bool should_process(const EuroScopePlugIn::CFlightPlan& flight_plan, bool ignore_already_assigned = false) const;
 	SidAllocation sid_allocation;
 	std::string get_runway(const EuroScopePlugIn::CFlightPlan& flight_plan, const std::string& sid_fix) const;
 
 public:
-	ProcedureAssigner();
+	ProcedureAssigner(std::function<void(const std::string&)> printer);
 	/**
 	 * \brief Processes a flight plan, potentially assigning a new RWY and SID.
 	 * This method is idempotent and can be called as often as desired on the same flight plan.
 	 * Changes by controllers will not be overwritten.
 	 * \param flight_plan Flight plan to process
+	 * \return true if successfully processed
 	 */
-	void process_flight_plan(const EuroScopePlugIn::CFlightPlan& flight_plan) const;
+	bool process_flight_plan(const EuroScopePlugIn::CFlightPlan& flight_plan, bool force = false) const;
 	/**
 	 * \brief Fetches the SID allocations from the internet and parses these.
 	 * \return Amount of allocation rules retrieved and parsed.

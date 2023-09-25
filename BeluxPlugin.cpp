@@ -22,17 +22,18 @@ bool function_fetch_gates = true;
 bool function_set_initial_climb = true;
 bool function_mach_visualisation = true;
 bool function_check_runway_and_sid = false;
+bool force_new_procedure = false;
 
 int timeout_value = 1000;
 
 // internal ID lists
-const int TAG_ITEM_GATE_ASGN = 1;
-const int TAG_FUNCTION_REFRESH_GATE = 2;
+constexpr int TAG_ITEM_GATE_ASGN = 1;
+constexpr int TAG_FUNCTION_REFRESH_GATE = 2;
 
-const int TAG_ITEM_MACH_NUMBER = 3;
+constexpr int TAG_ITEM_MACH_NUMBER = 3;
 
 // Time (in seconds) before we request new information about this flight from the API.
-const int DATA_RETENTION_LENGTH = 60;
+constexpr int DATA_RETENTION_LENGTH = 60;
 
 set<string>* processed;
 set<string>* beluxAirports;
@@ -43,7 +44,7 @@ set<string> brusselsSidWaypoints = {
 set<string> brusselSids = {};
 BeluxGatePlanner gatePlanner;
 BeluxUtil utils;
-ProcedureAssigner procedureAssigner;
+ProcedureAssigner* procedureAssigner;
 
 vector<string> activeDepRunways;
 vector<string> activeArrRunways;
@@ -59,8 +60,14 @@ BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY
 	versionCheck();
 	loadJSONconfig();
 
+	procedureAssigner = new ProcedureAssigner([this](const std::string& text)
+	{
+		DisplayUserMessage("Belux Plugin DEBUG - SID", "DEBUG", text.c_str(), true, true,
+		                   true, true, true);
+	});
+
 	getActiveRunways("EBBR");
-	procedureAssigner.set_departure_runways(activeDepRunways);
+	procedureAssigner->set_departure_runways(activeDepRunways);
 	beluxAirports = new set<string>({"EBBR", "ELLX", "EBOS", "EBAW", "EBLG", "EBKT", "EBCI"});
 	processed = new set<string>();
 
@@ -81,13 +88,15 @@ BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY
 	{
 		try
 		{
-			const auto parsed = procedureAssigner.fetch_sid_allocation();
-			printDebugMessage("ProcedureAllocation", "Parsed SID allocations: " + std::to_string(parsed));
+			const auto parsed = procedureAssigner->fetch_sid_allocation();
+			printDebugMessage("SID", "Parsed SID allocations: " + std::to_string(parsed));
 			if (parsed < 1)
 			{
 				printMessage("SID", "Could not parse SID allocation file.");
 			}
-		} catch (exception _e) {
+		}
+		catch (exception _e)
+		{
 			printDebugMessage("SID", "Caught an exception");
 		}
 	}
@@ -242,7 +251,12 @@ void BeluxPlugin::ProcessFlightPlans()
 		string callsign = fp.GetCallsign();
 
 		if (function_check_runway_and_sid)
-			procedureAssigner.process_flight_plan(fp);
+		{
+			if (procedureAssigner->process_flight_plan(fp, force_new_procedure))
+			{
+				printDebugMessage("SID", "Processed " + std::string(fp.GetCallsign()));
+			}
+		}
 
 		if (beluxAirports->find(dep_airport) == beluxAirports->end() // IF Not found in belux airport list
 			|| !fp.IsValid() || !fp.GetCorrelatedRadarTarget().IsValid()
@@ -298,6 +312,7 @@ void BeluxPlugin::ProcessFlightPlans()
 			}
 		}
 	}
+	force_new_procedure = false;
 }
 
 void BeluxPlugin::OnFlightPlanDisconnect(CFlightPlan FlightPlan)
@@ -308,7 +323,7 @@ void BeluxPlugin::OnFlightPlanDisconnect(CFlightPlan FlightPlan)
 	}
 	if (function_check_runway_and_sid)
 	{
-		procedureAssigner.on_disconnect(FlightPlan);
+		procedureAssigner->on_disconnect(FlightPlan);
 	}
 }
 
@@ -380,8 +395,8 @@ void BeluxPlugin::OnAirportRunwayActivityChanged(void)
 	{
 		// TODO check if this should move to ProcedureAssigner
 		getActiveRunways("EBBR");
-		procedureAssigner.set_departure_runways(activeDepRunways);
-		procedureAssigner.reprocess_all();
+		procedureAssigner->set_departure_runways(activeDepRunways);
+		procedureAssigner->reprocess_all();
 	}
 }
 
@@ -907,6 +922,16 @@ bool BeluxPlugin::OnCompileCommand(const char* sCommandLine)
 	{
 		if (function_fetch_gates)
 			FetchAndProcessGates();
+		return true;
+	}
+
+	if (boost::algorithm::starts_with(sCommandLine, ".belux force-sid"))
+	{
+		if (function_check_runway_and_sid)
+		{
+			procedureAssigner->reprocess_all();
+			force_new_procedure = true;
+		}
 		return true;
 	}
 

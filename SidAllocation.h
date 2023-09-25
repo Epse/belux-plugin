@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <vector>
 #include <ctime>
+#include <set>
 
 struct TimeActivation
 {
@@ -48,6 +49,7 @@ public:
 	 */
 	std::optional<SidEntry> find(const std::string& adep, const std::string& exit_point, const std::string& ades,
 	                             const int engine_count, const std::string& runway) const;
+	std::set<std::string> for_airport(const std::string& adep) const;
 
 private:
 	std::vector<SidEntry>* entries;
