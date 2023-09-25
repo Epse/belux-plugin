@@ -29,8 +29,8 @@ int timeout_value = 1000;
 // internal ID lists
 constexpr int TAG_ITEM_GATE_ASGN = 1;
 constexpr int TAG_FUNCTION_REFRESH_GATE = 2;
-
 constexpr int TAG_ITEM_MACH_NUMBER = 3;
+constexpr int TAG_FUNCTION_FORCE_SID = 4;
 
 // Time (in seconds) before we request new information about this flight from the API.
 constexpr int DATA_RETENTION_LENGTH = 60;
@@ -75,6 +75,7 @@ BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY
 	RegisterTagItemType("Assigned Gate", TAG_ITEM_GATE_ASGN);
 	RegisterTagItemFunction("refresh assigned gate", TAG_FUNCTION_REFRESH_GATE);
 	RegisterTagItemType("Mach number", TAG_ITEM_MACH_NUMBER);
+	RegisterTagItemFunction("Force RWY/SID", TAG_FUNCTION_FORCE_SID);
 
 	ProcessMETAR("EBLG", GetAirportInfo("EBLG"));
 	if (function_fetch_gates)
@@ -368,6 +369,12 @@ void BeluxPlugin::OnFunctionCall(int FunctionId, const char* sItemString, POINT 
 		if (function_fetch_gates)
 			FetchAndProcessGates();
 		break;
+	case TAG_FUNCTION_FORCE_SID:
+		if (function_check_runway_and_sid)
+			if (!procedureAssigner->process_flight_plan(FlightPlanSelectASEL(), true))
+			{
+				printMessage("SID", "Failed to assign requested SID/RWY");
+			}
 	}
 }
 
