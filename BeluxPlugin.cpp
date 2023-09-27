@@ -783,6 +783,7 @@ bool BeluxPlugin::OnCompileCommand(const char* sCommandLine)
 	{
 		printMessage("-", "Belux CLI");
 		printMessage("-", ".belux reload                          - reload json config");
+		printMessage("-", ".belux force-sid                       - force fresh SID/RWY assignment");
 		printMessage("-", ".belux gate(on/off)                    - enable/disable gate assignment");
 		printMessage("-", ".belux climb(on/off)                   - enable/disable initial climb assignment");
 		printMessage("-", ".belux mach(on/off)                    - enable/disable mach visualisation");

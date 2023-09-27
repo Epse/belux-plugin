@@ -41,13 +41,13 @@ std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::
 			continue;
 		if (entry.exit_point != exit_point)
 			continue;
+		if (entry.rwy != runway)
+			continue;
 		if (entry.ades.empty() && !does_ades_match(entry.ades, ades))
 			continue;
-		if (engine_count == 4 && entry.aircraft_class == 2)
+		if (engine_count == 4 && entry.aircraft_class == four_engined)
 			continue;
-		if (engine_count != 4 && entry.aircraft_class == 3)
-			continue;
-		if (entry.rwy != runway)
+		if (engine_count != 4 && entry.aircraft_class == non_four_engined)
 			continue;
 		if (!does_activation_match(entry.time_activation, now))
 			continue;
@@ -96,7 +96,7 @@ std::optional<SidEntry> SidAllocation::parse_line(const std::string& line) const
 	SidEntry entry = {
 		boost::trim_copy(columns[5]),
 		boost::trim_copy(columns[0]),
-		static_cast<uint8_t>(std::stoi(columns[2])),
+		static_cast<aircraft_class>(std::stoi(columns[2])),
 		parse_time_activation(boost::trim_copy(columns[3]),
 		                      boost::trim_copy(columns[4])),
 		boost::trim_copy(columns[6]),
@@ -227,6 +227,10 @@ bool SidAllocation::does_activation_match(const std::optional<TimeActivation>& r
 
 		return now.tm_wday > start.tm_wday || now.tm_wday < end.tm_wday;
 	}
+
+	// They start and end on the same day and today is not that day.
+	if (reference.value().has_weekdays && now.tm_wday != start.tm_wday)
+		return false;
 
 	// Do the time
 	// Simplified, I should in theory also compare the minutes.

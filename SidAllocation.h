@@ -13,11 +13,18 @@ struct TimeActivation
 	tm tm_end;
 };
 
+enum aircraft_class
+{
+	any = 1,
+	four_engined = 2,
+	non_four_engined = 3
+};
+
 struct SidEntry
 {
 	std::string sid;
 	std::string exit_point;
-	uint8_t aircraft_class;
+	aircraft_class aircraft_class;
 	std::optional<TimeActivation> time_activation;
 	std::string adep;
 	std::string ades; // Should parse the prefixes of = and * too, later
