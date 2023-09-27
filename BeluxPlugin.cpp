@@ -62,8 +62,7 @@ BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY
 
 	procedureAssigner = new ProcedureAssigner([this](const std::string& text)
 	{
-		DisplayUserMessage("Belux Plugin DEBUG - SID", "DEBUG", text.c_str(), true, true,
-		                   true, true, true);
+		printDebugMessage("SID", text);
 	});
 
 	getActiveRunways("EBBR");
