@@ -1,0 +1,244 @@
+--  EBBR   |
+-- RWY 01
+--
+CIV  |   |1|               |               |CIV1F  | EBBR | 01  | F060 |       |        | 01
+DENUT|   |1|               |               |DENUT8F| EBBR | 01  | F060 |       |        | 01
+ELSIK|   |1|               |               |ELSIK2F| EBBR | 01  | F060 |       | EBTRANA EBTRANB | 01
+HELEN|   |1|               |               |HELEN8F| EBBR | 01  | F060 |       |        | 01
+KOK  |   |1|               |               |KOK2F  | EBBR | 01  | F060 |       |        | 01
+LNO  |   |1|               |               |LNO7F  | EBBR | 01  | F060 |       |        | 01
+NIK  |   |1|               |               |NIK5F  | EBBR | 01  | F060 | *EHAM |        | 01
+PITES|   |1|               |               |PITES7F| EBBR | 01  | F060 |       |        | 01
+ROUSY|   |1|               |               |ROUSY7F| EBBR | 01  | F060 |       |        | 01
+SOPOK|   |1|               |               |SOPOK7F| EBBR | 01  | F060 |       |        | 01
+SPI  |   |1|               |               |SPI7F  | EBBR | 01  | F060 |       |        | 01
+--
+-- RWY 07 L
+--
+CIV  |   |1|               |               |CIV8H  | EBBR | 07L | F060 |       |        | 07L
+DENUT|   |1|               |               |DENUT4H| EBBR | 07L | F060 |       |        | 07L
+ELSIK|   |1|               |               |ELSIK1H| EBBR | 07L | F060 |       | EBTRANA EBTRANB | 07L
+HELEN|   |1|               |               |HELEN4H| EBBR | 07L | F060 |       |        | 07L
+KOK  |   |1|               |               |KOK1H  | EBBR | 07L | F060 |       |        | 07L
+LNO  |   |1|               |               |LNO6H  | EBBR | 07L | F060 |       |        | 07L
+NIK  |   |1|               |               |NIK1H  | EBBR | 07L | F060 | *EHAM |        | 07L
+PITES|   |1|               |               |PITES8H| EBBR | 07L | F060 |       |        | 07L
+ROUSY|   |1|               |               |ROUSY8H| EBBR | 07L | F060 |       |        | 07L
+SOPOK|   |1|               |               |SOPOK6H| EBBR | 07L | F060 |       |        | 07L
+SPI  |   |1|               |               |SPI7H  | EBBR | 07L | F060 |       |        | 07L
+--
+-- RWY 07 R
+--
+CIV  |   |1|               |               |CIV8J  | EBBR | 07R | F060 |       |        | 07R
+DENUT|   |1|               |               |DENUT2J| EBBR | 07R | F060 |       |        | 07R
+ELSIK|   |1|               |               |ELSIK2J| EBBR | 07R | F060 |       | EBTRANA EBTRANB | 07R
+HELEN|   |1|               |               |HELEN2J| EBBR | 07R | F060 |       |        | 07R
+KOK  |   |1|               |               |KOK2J  | EBBR | 07R | F060 |       |        | 07R
+LNO  |   |1|               |               |LNO6J  | EBBR | 07R | F060 |       |        | 07R
+NIK  |   |1|               |               |NIK2J  | EBBR | 07R | F060 | *EHAM |        | 07R
+PITES|   |1|               |               |PITES8J| EBBR | 07R | F060 |       |        | 07R
+ROUSY|   |1|               |               |ROUSY8J| EBBR | 07R | F060 |       |        | 07R
+SOPOK|   |1|               |               |SOPOK6J| EBBR | 07R | F060 |       |        | 07R
+SPI  |   |1|               |               |SPI6J  | EBBR | 07R | F060 |       |        | 07R
+--
+-- RWY 19
+--
+CIV  |   |1|               |               |CIV2L  | EBBR | 19  | F060 |       |        | 19
+DENUT|   |1|    0345       |     2044      |DENUT8L| EBBR | 19  | F060 |       |        | 19
+DENUT|   |1|    2045       |     0344      |DENUT7N| EBBR | 19  | F060 |       |        | 19
+ELSIK|   |1|               |               |ELSIK2L| EBBR | 19  | F060 |       | EBTRANA EBTRANB | 19
+HELEN|   |1|    0345       |     2044      |HELEN6L| EBBR | 19  | F060 |       |        | 19
+HELEN|   |1|    2045       |     0344      |HELEN6N| EBBR | 19  | F060 |       |        | 19
+KOK  |   |1|               |               |KOK8L  | EBBR | 19  | F060 |       |        | 19
+LNO  |   |1|               |               |LNO7L  | EBBR | 19  | F060 |       |        | 19
+NIK  |   |1|    0345       |     2044      |NIK3L  | EBBR | 19  | F060 | *EHAM |        | 19
+NIK  |   |1|    2045       |     0344      |NIK5N  | EBBR | 19  | F060 | *EHAM |        | 19
+PITES|   |1|               |               |PITES9L| EBBR | 19  | F060 |       |        | 19
+ROUSY|   |1|               |               |ROUSY9L| EBBR | 19  | F060 |       |        | 19
+SOPOK|   |1|               |               |SOPOK8L| EBBR | 19  | F060 |       |        | 19
+SPI  |   |1|               |               |SPI6L  | EBBR | 19  | F060 |       |        | 19
+--
+-- RWY 25 L
+--
+CIV  |   |1| SATURDAY 0345 | SATURDAY 2044 |CIV2Q  | EBBR | 25L | F060 |       |        | 25L
+CIV  |   |1| SUNDAY 0345   | SUNDAY 2044   |CIV2Q  | EBBR | 25L | F060 |       |        | 25L
+CIV  |   |2|    2045       |    0344       |CIV2Q  | EBBR | 25L | F060 |       |        | 25L
+CIV  |   |1|               |               |CIV5C  | EBBR | 25L | F060 |       |        | 25L
+DENUT|   |1|               |               |DENUT7C| EBBR | 25L | F060 |       |        | 25L
+ELSIK|   |1|               |               |ELSIK4C| EBBR | 25L | F060 |       | EBTRANA EBTRANB | 25L
+ELSIK|   |1|               |               |ELSIK4D| EBBR | 25L | F060 |       | EBTRANA EBTRANB | 25L
+HELEN|   |1|               |               |HELEN7C| EBBR | 25L | F060 |       |        | 25L
+KOK  |   |1|               |               |KOK5C  | EBBR | 25L | F060 |       |        | 25L
+LNO  |   |3|               |               |LNO4D  | EBBR | 25L | F060 |       |        | 25L
+LNO  |   |1|               |               |LNO6Q  | EBBR | 25L | F060 |       |        | 25L
+NIK  |   |1|               |               |NIK4C  | EBBR | 25L | F060 | *EHAM |        | 25L
+PITES|   |3|               |               |PITES5D| EBBR | 25L | F060 |       |        | 25L
+PITES|   |1|               |               |PITES8C| EBBR | 25L | F060 |       |        | 25L
+ROUSY|   |3|               |               |ROUSY5D| EBBR | 25L | F060 |       |        | 25L
+ROUSY|   |1|               |               |ROUSY8C| EBBR | 25L | F060 |       |        | 25L
+SOPOK|   |3|               |               |SOPOK5D| EBBR | 25L | F060 |       |        | 25L
+SOPOK|   |1|               |               |SOPOK9C| EBBR | 25L | F060 |       |        | 25L
+SPI  |   |3|               |               |SPI4D  | EBBR | 25L | F060 |       |        | 25L
+SPI  |   |1|               |               |SPI6Q  | EBBR | 25L | F060 |       |        | 25L
+--
+-- RWY 25 R
+--
+CIV  |   |1| SATURDAY 0345 | SATURDAY 2044 |CIV2D  | EBBR | 25R | F060 |       |        | 25R
+CIV  |   |1| SUNDAY 0345   | SUNDAY 2044   |CIV2D  | EBBR | 25R | F060 |       |        | 25R
+CIV  |   |2|    2045       |    0344       |CIV2D  | EBBR | 25R | F060 |       |        | 25R
+CIV  |   |1|               |               |CIV5C  | EBBR | 25R | F060 |       |        | 25R
+DENUT|   |1|               |               |DENUT7C| EBBR | 25R | F060 |       |        | 25R
+ELSIK|   |1|               |               |ELSIK4C| EBBR | 25R | F060 |       | EBTRANA EBTRANB | 25R
+ELSIK|   |1|               |               |ELSIK4D| EBBR | 25R | F060 |       | EBTRANA EBTRANB | 25R
+HELEN|   |1|               |               |HELEN7C| EBBR | 25R | F060 |       |        | 25R
+KOK  |   |1|               |               |KOK5C  | EBBR | 25R | F060 |       |        | 25R
+LNO  |   |3|    0345       |     2044      |LNO4D  | EBBR | 25R | F060 |       |        | 25R
+LNO  |   |1|    0345       |     2044      |LNO6C  | EBBR | 25R | F060 |       |        | 25R
+LNO  |   |1|    2045       |     0344      |LNO6Z  | EBBR | 25R | F060 |       |        | 25R
+NIK  |   |1|               |               |NIK4C  | EBBR | 25R | F060 | *EHAM |        | 25R
+PITES|   |3|    0345       |     2044      |PITES5D| EBBR | 25R | F060 |       |        | 25R
+PITES|   |1|    0345       |     2044      |PITES8C| EBBR | 25R | F060 |       |        | 25R
+PITES|   |1|    2045       |     0344      |PITES7Z| EBBR | 25R | F060 |       |        | 25R
+ROUSY|   |3|    0345       |     2044      |ROUSY5D| EBBR | 25R | F060 |       |        | 25R
+ROUSY|   |1|    0345       |     2044      |ROUSY8C| EBBR | 25R | F060 |       |        | 25R
+ROUSY|   |1|    2045       |     0344      |ROUSY6Z| EBBR | 25R | F060 |       |        | 25R
+SOPOK|   |3|    0345       |     2044      |SOPOK5D| EBBR | 25R | F060 |       |        | 25R
+SOPOK|   |1|    0345       |     2044      |SOPOK9C| EBBR | 25R | F060 |       |        | 25R
+SOPOK|   |1|    2045       |     0344      |SOPOK7Z| EBBR | 25R | F060 |       |        | 25R
+SPI  |   |3|    0345       |     2044      |SPI4D  | EBBR | 25R | F060 |       |        | 25R
+SPI  |   |1|    0345       |     2044      |SPI6C  | EBBR | 25R | F060 |       |        | 25R
+SPI  |   |1|    2045       |     0344      |SPI7Z  | EBBR | 25R | F060 |       |        | 25R
+--
+------------
+--  EBAW   |
+-- RWY 11
+--
+-- specific order to have GILOM2F chosen by default (presuming RWY 01 in use in EBBR)
+GILOM|   |1|               |               |GILOM3F| EBAW | 11  | A030 |       |        | 11
+GILOM|   |1|               |               |GILOM3E| EBAW | 11  | A030 |       |        | 11
+GILOM|   |1|               |               |GILOM3G| EBAW | 11  | A030 |       |        | 11
+NIK  |   |1|               |               |NIK4E  | EBAW | 11  | A030 |       |        | 11
+PUTTY|   |1|               |               |PUTTY6E| EBAW | 11  | A030 |       | PJE_HOEVENE | 11
+PUTTY|   |1|               |               |PUTTY2G| EBAW | 11  | A030 |       |        | 11
+SONDI|   |1|               |               |SONDI5E| EBAW | 11  | A030 |       |        | 11
+--
+-- RWY 29
+--
+-- specific order to have GILOM2C chosen by default (presuming RWY 25 in use in EBBR)
+GILOM|   |1|               |               |GILOM3C| EBAW | 29  | A030 |       |        | 29
+GILOM|   |1|               |               |GILOM4B| EBAW | 29  | A030 |       |        | 29
+GILOM|   |1|               |               |GILOM4D| EBAW | 29  | A030 |       |        | 29
+NIK  |   |1|               |               |NIK5C  | EBAW | 29  | A030 |       |        | 29
+PUTTY|   |1|               |               |PUTTY6C| EBAW | 29  | A030 |       | PJE_HOEVENE | 29
+PUTTY|   |1|               |               |PUTTY2B| EBAW | 29  | A030 |       |        | 29
+SONDI|   |1|               |               |SONDI6C| EBAW | 29  | A030 |       |        | 29
+--
+------------
+--  EBOS   |
+-- RWY 08
+--
+COA  |   |1|               |               |COA5S  | EBOS | 08  | F050 |       |        | 08
+FERDI|   |1|               |               |FERDI3S| EBOS | 08  | F050 |       |        | 08
+KOK  |   |1|               |               |KOK4S  | EBOS | 08  | F050 |       |        | 08
+KONAN|   |1|               |               |KONAN3S| EBOS | 08  | F050 |       |        | 08
+MAK  |   |1|               |               |MAK5S  | EBOS | 08  | F050 |       |        | 08
+NIK  |   |1|               |               |NIK3S  | EBOS | 08  | F050 |       |        | 08
+SASKI|   |1|               |               |SASKI5S| EBOS | 08  | F050 |       |        | 08
+--
+-- RWY 26
+--
+COA  |   |1|               |               |COA6M  | EBOS | 26  | F050 |       |        | 26
+FERDI|   |1|               |               |FERDI3M| EBOS | 26  | F050 |       |        | 26
+KOK  |   |1|               |               |KOK5M  | EBOS | 26  | F050 |       |        | 26
+KONAN|   |1|               |               |KONAN3M| EBOS | 26  | F050 |       |        | 26
+MAK  |   |1|               |               |MAK3M  | EBOS | 26  | F050 |       |        | 26
+NIK  |   |1|               |               |NIK3M  | EBOS | 26  | F050 |       |        | 26
+SASKI|   |1|               |               |SASKI5M| EBOS | 26  | F050 |       |        | 26
+--
+------------
+--  EBLG   |
+-- RWY 22 L 
+--
+BUB  |   |1|               |               |BUB9S  | EBLG | 22L | F050 |       |        | 22L
+CIV  |   |1|               |               |CIV5S  | EBLG | 22L | F050 |       |        | 22L
+LNO  |   |1|               |               |LNO9S  | EBLG | 22L | F050 |       | EBTRA23 EBTRAS6 EBTSA29A | 22L
+LNO  |   |1|               |               |LNO7E  | EBLG | 22L | F050 |       |        | 22L
+--
+-- RWY 22 R
+--
+BUB  |   |1|               |               |BUB9S  | EBLG | 22R | F050 |       |        | 22R
+CIV  |   |1|               |               |CIV5S  | EBLG | 22R | F050 |       |        | 22R
+LNO  |   |1|               |               |LNO9S  | EBLG | 22R | F050 |       | EBTRA23 EBTRAS6 EBTSA29A | 22R
+LNO  |   |1|               |               |LNO7E  | EBLG | 22R | F050 |       |        | 22R
+--
+-- RWY 04 R
+--
+BUB  |   |1|               |               |BUB1R  | EBLG | 04R | F050 |       |        | 04R
+CIV  |   |1|               |               |CIV6R  | EBLG | 04R | F050 |       |        | 04R
+LNO  |   |1|               |               |LNO2R  | EBLG | 04R | F050 |       |        | 04R
+--
+-- RWY 04 L
+--
+BUB  |   |1|               |               |BUB1R  | EBLG | 04L | F050 |       |        | 04L
+CIV  |   |1|               |               |CIV6R  | EBLG | 04L | F050 |       |        | 04L
+LNO  |   |1|               |               |LNO2R  | EBLG | 04L | F050 |       |        | 04L
+--
+------------
+--  EBCI   |
+-- RWY 06
+--
+CIV  |   |1|               |               |CIV5X  | EBCI | 06  | A040 |       |        | 06
+LNO  |   |1|               |               |LNO7X  | EBCI | 06  | A040 |       |        | 06
+RITAX|   |1|               |               |RITAX7X| EBCI | 06  | A040 |       |        | 06
+SOPOK|   |1|               |               |SOPOK7X| EBCI | 06  | A040 |       |        | 06
+SPI  |   |1|               |               |SPI7X  | EBCI | 06  | A040 |       |        | 06
+--
+-- RWY 24
+-- MEDIL SID removed - not automatic allocation since ATC discretion
+--
+CIV  |   |1|               |               |CIV4Y  | EBCI | 24  | A040 |       |        | 24
+LNO  |   |1|               |               |LNO4U  | EBCI | 24  | A040 |       | ABV_CTA_S1 EBTRASA EBTRASB | 24
+LNO  |   |1|               |               |LNO8Y  | EBCI | 24  | A040 |       |        | 24
+RITAX|   |1|               |               |RITAX4U| EBCI | 24  | A040 |       | ABV_CTA_S1 EBTRASA EBTRASB | 24
+RITAX|   |1|               |               |RITAX8Y| EBCI | 24  | A040 |       |        | 24
+SOPOK|   |1|               |               |SOPOK4U| EBCI | 24  | A040 |       | ABV_CTA_S1 EBTRASA EBTRASB | 24
+SOPOK|   |1|               |               |SOPOK8Y| EBCI | 24  | A040 |       |        | 24
+SPI  |   |1|               |               |SPI4U  | EBCI | 24  | A040 |       | ABV_CTA_S1 EBTRASA EBTRASB | 24
+SPI  |   |1|               |               |SPI8Y  | EBCI | 24  | A040 |       |        | 24
+--
+--
+------------
+--  EBKT   |
+-- RWY 24
+--
+MAK  |   |1|               |               |MAK1A  | EBKT | 24  | A030 |       |        | 24
+MAK  |   |1|               |               |MAK1B  | EBKT | 24  | A030 |       |        | 24
+--
+-- RWY06
+--
+MAK  |   |1|               |               |MAK1C  | EBKT | 06  | A030 |       |        | 06
+--
+------------
+--  ELLX   |
+-- RWY 06
+--
+ASMOX|   |1|               |               |ASMOX4T| ELLX | 06  | F050 |       |        | 06
+ASMOX|   |1|               |               |ASMOX4U| ELLX | 06  | F050 |       |        | 06
+DIK  |   |1|               |               |DIK5T  | ELLX | 06  | F050 |       |        | 06
+EXCOS|   |1|               |               |EXCOS3T| ELLX | 06  | F050 |       |        | 06
+EXCOS|   |1|               |               |EXCOS2U| ELLX | 06  | F050 |       |        | 06
+GTQ  |   |1|               |               |GTQ3T  | ELLX | 06  | F050 |       |        | 06
+GTQ  |   |1|               |               |GTQ3U  | ELLX | 06  | F050 |       |        | 06
+MMD  |   |1|               |               |MMD1T  | ELLX | 06  | F050 |       |        | 06
+RAPOR|   |1|               |               |RAPOR7T| ELLX | 06  | F050 |       |        | 06
+--
+-- RWY 24
+--
+ASMOX|   |1|               |               |ASMOX4Z| ELLX | 24  | F050 |       |        | 24
+DIK  |   |1|               |               |DIK5X  | ELLX | 24  | F050 |       |        | 24
+EXCOS|   |1|               |               |EXCOS2R| ELLX | 24  | F050 |       |        | 24
+EXCOS|   |1|               |               |EXCOS4X| ELLX | 24  | F050 |       |        | 24
+GTQ  |   |1|               |               |GTQ2R  | ELLX | 24  | F050 |       |        | 24
+GTQ  |   |1|               |               |GTQ4X  | ELLX | 24  | F050 |       |        | 24
+MMD  |   |1|               |               |MMD1X  | ELLX | 24  | F050 |       |        | 24
+RAPOR|   |1|               |               |RAPOR7X| ELLX | 24  | F050 |       |        | 24

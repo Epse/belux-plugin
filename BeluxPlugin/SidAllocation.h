@@ -55,13 +55,15 @@ public:
 	 * \return A SID entry if one matches the provided rules
 	 */
 	std::optional<SidEntry> find(const std::string& adep, const std::string& exit_point, const std::string& ades,
-	                             const int engine_count, const std::string& runway) const;
+	                             const int engine_count, const std::string& runway,
+	                             const tm& now) const;
 	std::set<std::string> for_airport(const std::string& adep) const;
 
 private:
 	std::vector<SidEntry>* entries;
 	std::optional<SidEntry> parse_line(const std::string& line) const;
-	std::optional<TimeActivation> parse_time_activation(const std::string& line_start, const std::string& line_end) const;
+	std::optional<TimeActivation> parse_time_activation(const std::string& line_start,
+	                                                    const std::string& line_end) const;
 	std::optional<std::pair<bool, tm>> parse_activation_time_line(const std::string& line) const;
 	/**
 	 * \brief Checks if the given ADES matches the entry ADES given under reference.

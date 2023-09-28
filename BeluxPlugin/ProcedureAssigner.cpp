@@ -130,11 +130,16 @@ bool ProcedureAssigner::process_flight_plan(const EuroScopePlugIn::CFlightPlan& 
 	const std::string runway = get_runway(flight_plan, sid_fix);
 
 	auto flight_plan_data = flight_plan.GetFlightPlanData();
+	time_t raw_time;
+	time(&raw_time);
+	// Get a tm struct for now in UTC
+	struct tm now;
+	gmtime_s(&now, &raw_time);
 	const auto maybe_sid = sid_allocation.find(flight_plan_data.GetOrigin(),
 	                                           sid_fix,
 	                                           flight_plan_data.GetDestination(),
 	                                           flight_plan_data.GetEngineNumber(),
-	                                           runway);
+	                                           runway, now);
 
 	if (!maybe_sid.has_value())
 		return false; // Maybe we should log this, but can't at the moment...

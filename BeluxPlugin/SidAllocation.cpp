@@ -27,14 +27,9 @@ size_t SidAllocation::parse_string(const std::string& input) const
 
 std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::string& exit_point,
                                             const std::string& ades, const int engine_count,
-                                            const std::string& runway) const
+                                            const std::string& runway,
+                                            const tm& now) const
 {
-	time_t rawtime;
-	time(&rawtime);
-	// Get a tm struct for now in UTC
-	struct tm now;
-	gmtime_s(&now, &rawtime);
-
 	for (auto entry : *entries)
 	{
 		if (entry.adep != adep)
@@ -45,9 +40,9 @@ std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::
 			continue;
 		if (entry.ades.empty() && !does_ades_match(entry.ades, ades))
 			continue;
-		if (engine_count == 4 && entry.aircraft_class == four_engined)
+		if (engine_count != 4 && entry.aircraft_class == four_engined)
 			continue;
-		if (engine_count != 4 && entry.aircraft_class == non_four_engined)
+		if (engine_count == 4 && entry.aircraft_class == non_four_engined)
 			continue;
 		if (!does_activation_match(entry.time_activation, now))
 			continue;
@@ -62,7 +57,7 @@ std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::
 std::set<std::string> SidAllocation::for_airport(const std::string& adep) const
 {
 	std::set<std::string> result;
-	for (auto &entry : *entries)
+	for (auto& entry : *entries)
 	{
 		if (entry.adep != adep)
 			continue;
