@@ -6,6 +6,7 @@
 
 #include "EuroScopePlugIn.h"
 #include "SidAllocation.h"
+#include "LaraParser.h"
 
 class ProcedureAssigner
 {
@@ -23,6 +24,7 @@ private:
  */
 	bool should_process(const EuroScopePlugIn::CFlightPlan& flight_plan, bool ignore_already_assigned = false) const;
 	SidAllocation sid_allocation;
+	LaraParser lara_parser;
 	std::string get_runway(const EuroScopePlugIn::CFlightPlan& flight_plan, const std::string& sid_fix) const;
 
 public:
@@ -40,6 +42,11 @@ public:
 	 * \return Amount of allocation rules retrieved and parsed.
 	 */
 	size_t fetch_sid_allocation() const;
+	/**
+	 * \brief Reads LARA instructions relative to dll path from TopSky
+	 * \return Amount of parsed LARA entries
+	 */
+	size_t setup_lara() const;
 	/**
 	 * \brief Marks all flight plans for processing on next update, regardless of previous state.
 	 */

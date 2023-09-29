@@ -5,6 +5,7 @@
 #include <vector>
 #include <ctime>
 #include <set>
+#include <memory>
 
 struct TimeActivation
 {
@@ -52,15 +53,17 @@ public:
 	 * \param exit_point First FIX in flightplan, expected SID exit point
 	 * \param ades Destination ICAO
 	 * \param engine_count self-explanatory
+	 * \param now A fakeable reference to the current time
+	 * \param active_areas A vector of active TRA/TSA areas to check against
 	 * \return A SID entry if one matches the provided rules
 	 */
 	std::optional<SidEntry> find(const std::string& adep, const std::string& exit_point, const std::string& ades,
 	                             const int engine_count, const std::string& runway,
-	                             const tm& now) const;
+	                             const tm& now, const std::vector<std::string>& active_areas) const;
 	std::set<std::string> for_airport(const std::string& adep) const;
 
 private:
-	std::vector<SidEntry>* entries;
+	std::unique_ptr<std::vector<SidEntry>> entries;
 	std::optional<SidEntry> parse_line(const std::string& line) const;
 	std::optional<TimeActivation> parse_time_activation(const std::string& line_start,
 	                                                    const std::string& line_end) const;

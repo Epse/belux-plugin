@@ -28,8 +28,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="res\SID_ALLOCATION.txt">
+    <CopyFileToFolders Include="res\SID_ALLOCATION.txt" />
+    <CopyFileToFolders Include="res\TopSkyAreasManualAct.txt">
       <Filter>Resource Files</Filter>
-    </Text>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

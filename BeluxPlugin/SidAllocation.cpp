@@ -8,7 +8,7 @@
 
 SidAllocation::SidAllocation()
 {
-	entries = new std::vector<SidEntry>();
+	entries = std::make_unique<std::vector<SidEntry>>();
 }
 
 size_t SidAllocation::parse_string(const std::string& input) const
@@ -28,7 +28,8 @@ size_t SidAllocation::parse_string(const std::string& input) const
 std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::string& exit_point,
                                             const std::string& ades, const int engine_count,
                                             const std::string& runway,
-                                            const tm& now) const
+                                            const tm& now,
+                                            const std::vector<std::string>& active_areas) const
 {
 	for (auto entry : *entries)
 	{
@@ -46,8 +47,15 @@ std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::
 			continue;
 		if (!does_activation_match(entry.time_activation, now))
 			continue;
+		if (!entry.tsa.empty())
+		{
+			for (auto area: active_areas)
+			{
+				if (entry.tsa.find(area) != std::string::npos)
+					continue;
+			}
+		}
 
-		// TODO: TSA status
 		return entry;
 	}
 

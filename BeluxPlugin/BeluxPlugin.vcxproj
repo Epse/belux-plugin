@@ -217,6 +217,7 @@
     <ClCompile Include="BeluxGatePlanner.cpp" />
     <ClCompile Include="BeluxPlugin.cpp" />
     <ClCompile Include="BeluxUtil.cpp" />
+    <ClCompile Include="LaraParser.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -237,6 +238,7 @@
     <ClInclude Include="BeluxPlugin.hpp" />
     <ClInclude Include="BeluxUtil.hpp" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="LaraParser.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ProcedureAssigner.h" />
     <ClInclude Include="Resource.h" />

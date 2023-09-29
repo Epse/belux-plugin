@@ -40,10 +40,6 @@ constexpr int DATA_RETENTION_LENGTH = 60;
 set<string>* processed;
 set<string> activeAirports;
 
-set<string> brusselsSidWaypoints = {
-	"ELSIK", "NIK", "HELEN", "DENUT", "KOK", "CIV", "ROUSY", "PITES", "SPI", "LNO", "SOPOK"
-};
-set<string> brusselSids = {};
 BeluxGatePlanner gatePlanner;
 BeluxUtil utils;
 ProcedureAssigner* procedureAssigner;
@@ -69,6 +65,10 @@ BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY
 
 	getActiveRunways();
 	procedureAssigner->set_departure_runways(activeDepRunways);
+	if (procedureAssigner->setup_lara() < 1)
+	{
+		printMessage("SID", "Could not parse LARA");
+	}
 	processed = new set<string>();
 
 	// Register Tag item(s).
@@ -921,6 +921,13 @@ bool BeluxPlugin::OnCompileCommand(const char* sCommandLine)
 		{
 			printMessage("Functionalities", "Alert on gate change: invalid (default blink)");
 		}
+
+		return true;
+	}
+
+	// FIXME: DELETEME
+	if (boost::algorithm::starts_with(sCommandLine, ".belux test-areas"))
+	{
 
 		return true;
 	}

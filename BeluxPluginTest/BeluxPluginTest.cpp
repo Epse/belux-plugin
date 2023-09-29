@@ -21,7 +21,7 @@ namespace BeluxPluginTest
 
 		static SidAllocation get_filled_allocator()
 		{
-			const SidAllocation allocation;
+			SidAllocation allocation;
 			allocation.parse_string(get_allocation_file());
 			return allocation;
 		}
@@ -50,8 +50,9 @@ namespace BeluxPluginTest
 			fake_now.tm_year = 2023;
 			fake_now.tm_hour = 22; // Late, to perhaps trigger the four-engine case.
 
+			const std::vector<std::string> areas;
 			const auto maybe_sid = allocation.find("EBBR", "CIV", "EKCH",
-			                                       2, "25R", fake_now);
+			                                       2, "25R", fake_now, areas);
 			Assert::IsTrue(maybe_sid.has_value());
 			Assert::AreNotEqual(std::string("CIV2D"), maybe_sid.value().sid);
 		}
@@ -66,8 +67,9 @@ namespace BeluxPluginTest
 			fake_now.tm_year = 2023;
 			fake_now.tm_hour = 22; // Late, to perhaps trigger the four-engine case.
 
+			const std::vector<std::string> areas;
 			const auto maybe_sid = allocator.find("EBBR", "CIV", "EKCH",
-				4, "25R", fake_now);
+				4, "25R", fake_now, areas);
 
 			Assert::IsTrue(maybe_sid.has_value());
 			Assert::AreEqual(std::string("CIV2D"), maybe_sid->sid);

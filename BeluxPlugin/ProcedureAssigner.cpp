@@ -117,6 +117,7 @@ ProcedureAssigner::ProcedureAssigner(std::function<void(const std::string&)> pri
 	debug_printer = std::move(printer);
 }
 
+// TODO: a lot of the data in this loop should really be cached between planes in one iteration...
 bool ProcedureAssigner::process_flight_plan(const EuroScopePlugIn::CFlightPlan& flight_plan, bool force) const
 {
 	if (!force && processed->find(std::string(flight_plan.GetCallsign())) != processed->end())
@@ -151,11 +152,14 @@ bool ProcedureAssigner::process_flight_plan(const EuroScopePlugIn::CFlightPlan& 
 	// Get a tm struct for now in UTC
 	struct tm now;
 	gmtime_s(&now, &raw_time);
+
+	const auto areas = lara_parser.get_active(now);
+
 	const auto maybe_sid = sid_allocation.find(flight_plan_data.GetOrigin(),
 	                                           sid_fix,
 	                                           flight_plan_data.GetDestination(),
 	                                           flight_plan_data.GetEngineNumber(),
-	                                           runway, now);
+	                                           runway, now, areas);
 
 	if (!maybe_sid.has_value())
 		return false; // Maybe we should log this, but can't at the moment...
@@ -195,6 +199,21 @@ size_t ProcedureAssigner::fetch_sid_allocation() const
 	const std::string allocation = BeluxUtil::https_fetch_file(
 		"https://beluxvacc.org/files/navigation_department/datafiles/SID_ALLOCATION.txt");
 	return sid_allocation.parse_string(allocation);
+}
+
+size_t ProcedureAssigner::setup_lara() const
+{
+
+	// Getting the DLL file folder
+	char dll_path_file[_MAX_PATH];
+	GetModuleFileNameA(reinterpret_cast<HINSTANCE>(&__ImageBase), dll_path_file, sizeof(dll_path_file));
+	std::string lara_path = dll_path_file;
+	lara_path.resize(lara_path.size() - strlen("Belux\\Belux.dll"));
+	lara_path += "\\TopSky\\TopSkyAreasManualAct.txt";
+	std::ifstream ifs(lara_path);
+	const std::string allocation_file((std::istreambuf_iterator<char>(ifs)),
+								(std::istreambuf_iterator<char>()));
+	return lara_parser.parse_string(allocation_file);
 }
 
 void ProcedureAssigner::reprocess_all() const
