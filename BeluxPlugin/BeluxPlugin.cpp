@@ -68,7 +68,7 @@ BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY
 	});
 
 	getActiveRunways();
-	procedureAssigner->set_departure_runways(activeDepRunways["EBBR"]);
+	procedureAssigner->set_departure_runways(activeDepRunways);
 	processed = new set<string>();
 
 	// Register Tag item(s).
@@ -391,15 +391,14 @@ void BeluxPlugin::OnTimer(int Counter)
 void BeluxPlugin::OnAirportRunwayActivityChanged(void)
 {
 	getActiveRunways();
-	procedureAssigner->set_departure_runways(activeDepRunways["EBBR"]);
+	procedureAssigner->set_departure_runways(activeDepRunways);
 	procedureAssigner->reprocess_all();
 }
 
 void BeluxPlugin::FetchAndProcessGates()
 {
 	gatePlanner.fetch_json(GetGateInfo());
-	for (std::map<string, BeluxGateEntry>::iterator iter = gatePlanner.gate_list.begin(); iter != gatePlanner.gate_list.
-	     end(); ++iter)
+	for (auto iter = gatePlanner.gate_list.begin(); iter != gatePlanner.gate_list.end(); ++iter)
 	{
 		string cs = iter->first;
 		BeluxGateEntry entry = iter->second;
@@ -581,7 +580,8 @@ void BeluxPlugin::getActiveRunways()
 	map<string, vector<string>> active_arr_runways;
 	set<string> active_airports;
 
-	for (CSectorElement ad = SectorFileElementSelectFirst(SECTOR_ELEMENT_AIRPORT); ad.IsValid(); ad = SectorFileElementSelectNext(ad, SECTOR_ELEMENT_AIRPORT))
+	for (CSectorElement ad = SectorFileElementSelectFirst(SECTOR_ELEMENT_AIRPORT); ad.IsValid(); ad =
+	     SectorFileElementSelectNext(ad, SECTOR_ELEMENT_AIRPORT))
 	{
 		if (ad.IsElementActive(false, 0) && ad.IsElementActive(true, 0))
 		{
@@ -621,13 +621,17 @@ void BeluxPlugin::getActiveRunways()
 
 	if (DEBUG_print)
 	{
-		for (const auto& dep_config: active_dep_runways)
+		for (const auto& dep_config : active_dep_runways)
 		{
-			printDebugMessage("RWY", "Dep " + dep_config.first + ": " + reduce(dep_config.second.begin(), dep_config.second.end(), string("")));
+			printDebugMessage(
+				"RWY", "Dep " + dep_config.first + ": " + reduce(dep_config.second.begin(), dep_config.second.end(),
+				                                                 string("")));
 		}
-		for (const auto& arr_config: active_arr_runways)
+		for (const auto& arr_config : active_arr_runways)
 		{
-			printDebugMessage("RWY", "Arr " + arr_config.first + ": " + reduce(arr_config.second.begin(), arr_config.second.end(), string("")));
+			printDebugMessage(
+				"RWY", "Arr " + arr_config.first + ": " + reduce(arr_config.second.begin(), arr_config.second.end(),
+				                                                 string("")));
 		}
 	}
 

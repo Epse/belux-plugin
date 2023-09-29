@@ -5,8 +5,10 @@
 #include <algorithm>
 #include <list>
 #include <boost/algorithm/string.hpp>
+#include <utility>
 
-bool ProcedureAssigner::should_process(const EuroScopePlugIn::CFlightPlan& flight_plan, bool ignore_already_assigned) const
+bool ProcedureAssigner::should_process(const EuroScopePlugIn::CFlightPlan& flight_plan,
+                                       bool ignore_already_assigned) const
 {
 	if (flight_plan.GetClearenceFlag())
 		return false; // No reason to change it from under the ATCO
@@ -35,12 +37,12 @@ bool ProcedureAssigner::should_process(const EuroScopePlugIn::CFlightPlan& fligh
 		return false; // Altitude == 0 -> uncorrelated? altitude should never be zero
 
 	const std::string callsign = flight_plan.GetCallsign();
-	if (! ignore_already_assigned)
+	if (!ignore_already_assigned)
 	{
 		const std::string route = flight_plan.GetFlightPlanData().GetRoute();
 		debug_printer("Checking if we have a SID for " + callsign + " in " + route);
 		const auto sids = sid_allocation.for_airport(adep);
-		for (auto &sid: sids)
+		for (auto& sid : sids)
 		{
 			if (route.find(sid) != std::string::npos)
 			{
@@ -57,20 +59,23 @@ bool ProcedureAssigner::should_process(const EuroScopePlugIn::CFlightPlan& fligh
 std::string ProcedureAssigner::get_runway(const EuroScopePlugIn::CFlightPlan& flight_plan,
                                           const std::string& sid_fix) const
 {
-	if (std::string(flight_plan.GetFlightPlanData().GetOrigin()) != "EBBR")
+	const std::string origin = flight_plan.GetFlightPlanData().GetOrigin();
+	const auto& origin_runways = departure_runways->at(origin);
+	// FIXME: Follow minors procedure
+	if (origin != "EBBR")
 	{
-		return departure_runways->at(0);
+		return origin_runways.at(0);
 	}
 
-	// Minor optimisation
-	if (departure_runways->size() == 1)
-		return departure_runways->at(0);
+	// Tiny optimisation
+	if (departure_runways->at(origin).size() == 1)
+		return origin_runways.at(0);
 
-	const bool has_25R = std::binary_search(std::begin(*departure_runways), std::end(*departure_runways),
+	const bool has_25R = std::binary_search(std::begin(origin_runways), std::end(origin_runways),
 	                                        std::string("25R"));
-	const bool has_19 = std::binary_search(std::begin(*departure_runways), std::end(*departure_runways),
+	const bool has_19 = std::binary_search(std::begin(origin_runways), std::end(origin_runways),
 	                                       std::string("19"));
-	const bool has_07R = std::binary_search(std::begin(*departure_runways), std::end(*departure_runways),
+	const bool has_07R = std::binary_search(std::begin(origin_runways), std::end(origin_runways),
 	                                        std::string("07R"));
 	const char wtc = flight_plan.GetFlightPlanData().GetAircraftWtc();
 
@@ -91,14 +96,14 @@ std::string ProcedureAssigner::get_runway(const EuroScopePlugIn::CFlightPlan& fl
 		return "19";
 	}
 
-	return has_07R ? "07R" : departure_runways->at(0);
+	return has_07R ? "07R" : origin_runways.at(0);
 }
 
 ProcedureAssigner::ProcedureAssigner(std::function<void(const std::string&)> printer)
 {
 	processed = new std::set<std::string>();
-	departure_runways = new std::vector<std::string>();
-	debug_printer = printer;
+	departure_runways = new std::map<std::string, std::vector<std::string>>();
+	debug_printer = std::move(printer);
 }
 
 bool ProcedureAssigner::process_flight_plan(const EuroScopePlugIn::CFlightPlan& flight_plan, bool force) const
@@ -191,7 +196,8 @@ void ProcedureAssigner::on_disconnect(const EuroScopePlugIn::CFlightPlan& flight
 	processed->erase(std::string(flight_plan.GetCallsign()));
 }
 
-void ProcedureAssigner::set_departure_runways(const std::vector<std::string>& active_departure_runways) const
+void ProcedureAssigner::set_departure_runways(
+	const std::map<std::string, std::vector<std::string>>& active_departure_runways) const
 {
 	(*departure_runways) = active_departure_runways;
 }
