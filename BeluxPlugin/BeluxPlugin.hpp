@@ -49,15 +49,18 @@ protected:
 	string BeluxPlugin::GetLatestPluginVersion();
 	string BeluxPlugin::SwapGate(string callsign, string gate);
 	void BeluxPlugin::ProcessMETAR(string airport, string metar);
-	void BeluxPlugin::getActiveRunways(string airport);
+	/**
+	 * \brief Sets all active runways in the plugin properties
+	 */
+	void BeluxPlugin::getActiveRunways();
 	void BeluxPlugin::ProcessFlightPlans();
 	void BeluxPlugin::SendDiscordMessage(string msg);
 	void BeluxPlugin::FetchAndProcessGates();
 	void BeluxPlugin::versionCheck();
 	void BeluxPlugin::loadJSONconfig();
 
-	void BeluxPlugin::printDebugMessage(string function, string message);
-	void BeluxPlugin::printMessage(string topic, string message);
+	void BeluxPlugin::printDebugMessage(const string& function, const string& message);
+	void BeluxPlugin::printMessage(const string& topic, const string& message);
 };
 
 inline static bool startsWith(const char* pre, const char* str)

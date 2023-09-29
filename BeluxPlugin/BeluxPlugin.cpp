@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "BeluxPlugin.hpp"
+
+#include <execution>
 #include <string>
 #include <map>
 #include <set>
@@ -36,7 +38,7 @@ constexpr int TAG_FUNCTION_FORCE_SID = 4;
 constexpr int DATA_RETENTION_LENGTH = 60;
 
 set<string>* processed;
-set<string>* beluxAirports;
+set<string> activeAirports;
 
 set<string> brusselsSidWaypoints = {
 	"ELSIK", "NIK", "HELEN", "DENUT", "KOK", "CIV", "ROUSY", "PITES", "SPI", "LNO", "SOPOK"
@@ -46,8 +48,8 @@ BeluxGatePlanner gatePlanner;
 BeluxUtil utils;
 ProcedureAssigner* procedureAssigner;
 
-vector<string> activeDepRunways;
-vector<string> activeArrRunways;
+map<string, vector<string>> activeDepRunways;
+map<string, vector<string>> activeArrRunways;
 
 int liege_QNH = 0;
 
@@ -65,9 +67,8 @@ BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY
 		printDebugMessage("SID", text);
 	});
 
-	getActiveRunways("EBBR");
+	getActiveRunways();
 	procedureAssigner->set_departure_runways(activeDepRunways);
-	beluxAirports = new set<string>({"EBBR", "ELLX", "EBOS", "EBAW", "EBLG", "EBKT", "EBCI"});
 	processed = new set<string>();
 
 	// Register Tag item(s).
@@ -101,7 +102,6 @@ BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY
 
 BeluxPlugin::~BeluxPlugin()
 {
-	delete beluxAirports;
 	delete processed;
 }
 
@@ -255,7 +255,7 @@ void BeluxPlugin::ProcessFlightPlans()
 			}
 		}
 
-		if (beluxAirports->find(dep_airport) == beluxAirports->end() // IF Not found in belux airport list
+		if (activeAirports.find(dep_airport) == activeAirports.end() // IF Not found in belux airport list
 			|| !fp.IsValid() || !fp.GetCorrelatedRadarTarget().IsValid()
 			// OR flightplan has not been loaded/correleted correctly?
 			|| processed->find(callsign) != processed->end() // OR was already processed
@@ -390,7 +390,7 @@ void BeluxPlugin::OnTimer(int Counter)
 
 void BeluxPlugin::OnAirportRunwayActivityChanged(void)
 {
-	getActiveRunways("EBBR");
+	getActiveRunways();
 	procedureAssigner->set_departure_runways(activeDepRunways);
 	procedureAssigner->reprocess_all();
 }
@@ -398,8 +398,7 @@ void BeluxPlugin::OnAirportRunwayActivityChanged(void)
 void BeluxPlugin::FetchAndProcessGates()
 {
 	gatePlanner.fetch_json(GetGateInfo());
-	for (std::map<string, BeluxGateEntry>::iterator iter = gatePlanner.gate_list.begin(); iter != gatePlanner.gate_list.
-	     end(); ++iter)
+	for (auto iter = gatePlanner.gate_list.begin(); iter != gatePlanner.gate_list.end(); ++iter)
 	{
 		string cs = iter->first;
 		BeluxGateEntry entry = iter->second;
@@ -425,54 +424,6 @@ void BeluxPlugin::FetchAndProcessGates()
 		{
 			fp.GetControllerAssignedData().SetFlightStripAnnotation(4, gate.c_str());
 			//FlightPlan.GetControllerAssignedData().SetScratchPadString(gatePlanner.gate_list[cs].gate.c_str());
-		}
-
-
-		// Assign arrival RWY, as of yet not used
-		if (function_check_runway_and_sid && false)
-		{
-			bool ops25r25l = (find(activeArrRunways.begin(), activeArrRunways.end(), "25L") != activeArrRunways.end() &&
-				find(activeArrRunways.begin(), activeArrRunways.end(), "25R") != activeArrRunways.end());
-			bool ops07l07r = (find(activeArrRunways.begin(), activeArrRunways.end(), "07L") != activeArrRunways.end() &&
-				find(activeArrRunways.begin(), activeArrRunways.end(), "07R") != activeArrRunways.end());
-
-			if (ops25r25l || ops07l07r)
-			{
-				string route = fp.GetFlightPlanData().GetRoute();
-				string last_waypoint = route.substr(route.find_last_of(" ") + 1);
-
-				if (ops25r25l && (boost::algorithm::starts_with(gate, "MIL") ||
-					boost::algorithm::starts_with(gate, "GA") || boost::algorithm::starts_with(gate, "9") ||
-					boost::algorithm::starts_with(gate, "5")))
-				{
-					if (last_waypoint != "EBBR/25R")
-					{
-						if (last_waypoint == "EBBR/25L" || last_waypoint == "EBBR/19" || last_waypoint == "EBBR/07L" ||
-							last_waypoint == "EBBR/07R")
-						{
-							route = route.substr(0, route.find_last_of(" ") - 1);
-						}
-						route += string(" EBBR/25R");
-						//fp.GetFlightPlanData().SetRoute(route.c_str());
-						//fp.GetFlightPlanData().AmendFlightPlan();
-					}
-				}
-				else if (ops07l07r && (boost::algorithm::starts_with(gate, "MIL") || boost::algorithm::starts_with(
-					gate, "GA")))
-				{
-					if (last_waypoint != "EBBR/07L")
-					{
-						if (last_waypoint == "EBBR/25L" || last_waypoint == "EBBR/19" || last_waypoint == "EBBR/25R" ||
-							last_waypoint == "EBBR/07R")
-						{
-							route = route.substr(0, route.find_last_of(" ") - 1);
-						}
-						route += string(" EBBR/07L");
-						//fp.GetFlightPlanData().SetRoute(route.c_str());
-						//fp.GetFlightPlanData().AmendFlightPlan();
-					}
-				}
-			}
 		}
 	}
 }
@@ -553,14 +504,14 @@ string BeluxPlugin::GetAirportInfo(string airport)
 	return response;
 }
 
-void BeluxPlugin::printDebugMessage(string function, string message)
+void BeluxPlugin::printDebugMessage(const string& function, const string& message)
 {
 	if (DEBUG_print)
 		DisplayUserMessage(string("Belux Plugin DEBUG - " + function).c_str(), "DEBUG", message.c_str(), true, true,
 		                   true, true, true);
 }
 
-void BeluxPlugin::printMessage(string topic, string message)
+void BeluxPlugin::printMessage(const string& topic, const string& message)
 {
 	DisplayUserMessage("Belux Plugin", topic.c_str(), message.c_str(), true, true, true, true, true);
 }
@@ -623,50 +574,70 @@ void BeluxPlugin::SendDiscordMessage(string msg)
 	string response = GetHttpsRequest(host, uri, request.str(), true);
 }
 
-void BeluxPlugin::getActiveRunways(string airport)
+void BeluxPlugin::getActiveRunways()
 {
-	activeDepRunways.clear();
-	activeArrRunways.clear();
+	map<string, vector<string>> active_dep_runways;
+	map<string, vector<string>> active_arr_runways;
+	set<string> active_airports;
+
+	for (CSectorElement ad = SectorFileElementSelectFirst(SECTOR_ELEMENT_AIRPORT); ad.IsValid(); ad =
+	     SectorFileElementSelectNext(ad, SECTOR_ELEMENT_AIRPORT))
+	{
+		if (ad.IsElementActive(false, 0) && ad.IsElementActive(true, 0))
+		{
+			active_airports.emplace(ad.GetName());
+		}
+	}
 
 	// Auto load the airport config on ASR opened.
-	CSectorElement rwy;
-
-	for (rwy = SectorFileElementSelectFirst(SECTOR_ELEMENT_RUNWAY);
+	for (CSectorElement rwy = SectorFileElementSelectFirst(SECTOR_ELEMENT_RUNWAY);
 	     rwy.IsValid();
 	     rwy = SectorFileElementSelectNext(rwy, SECTOR_ELEMENT_RUNWAY))
 	{
-		if (startsWith(airport.c_str(), rwy.GetAirportName()))
+		const auto ad_name = boost::trim_copy(string(rwy.GetAirportName()));
+		if (active_airports.find(ad_name) == active_airports.end())
 		{
-			if (rwy.IsElementActive(true, 0))
-			{
-				activeDepRunways.push_back(rwy.GetRunwayName(0));
-			}
-			if (rwy.IsElementActive(false, 0))
-			{
-				activeArrRunways.push_back(rwy.GetRunwayName(0));
-			}
+			continue; // Inactive AD
+		}
 
-			if (rwy.IsElementActive(true, 1))
-			{
-				activeDepRunways.push_back(rwy.GetRunwayName(1));
-			}
-			if (rwy.IsElementActive(false, 1))
-			{
-				activeArrRunways.push_back(rwy.GetRunwayName(1));
-			}
+		if (rwy.IsElementActive(true, 0))
+		{
+			active_dep_runways[rwy.GetAirportName()].push_back(rwy.GetRunwayName(0));
+		}
+		if (rwy.IsElementActive(false, 0))
+		{
+			active_arr_runways[rwy.GetAirportName()].push_back(rwy.GetRunwayName(0));
+		}
+
+		if (rwy.IsElementActive(true, 1))
+		{
+			active_dep_runways[rwy.GetAirportName()].push_back(rwy.GetRunwayName(1));
+		}
+		if (rwy.IsElementActive(false, 1))
+		{
+			active_arr_runways[rwy.GetAirportName()].push_back(rwy.GetRunwayName(1));
 		}
 	}
-	string outputmsg = "active runways are: D=";
-	for (int i = 0; i < activeDepRunways.size(); i++)
+
+	if (DEBUG_print)
 	{
-		outputmsg += activeDepRunways[i] + ",";
+		for (const auto& dep_config : active_dep_runways)
+		{
+			printDebugMessage(
+				"RWY", "Dep " + dep_config.first + ": " + reduce(dep_config.second.begin(), dep_config.second.end(),
+				                                                 string("")));
+		}
+		for (const auto& arr_config : active_arr_runways)
+		{
+			printDebugMessage(
+				"RWY", "Arr " + arr_config.first + ": " + reduce(arr_config.second.begin(), arr_config.second.end(),
+				                                                 string("")));
+		}
 	}
-	outputmsg += "; A=";
-	for (int i = 0; i < activeArrRunways.size(); i++)
-	{
-		outputmsg += activeArrRunways[i] + ",";
-	}
-	printDebugMessage("rwysid", outputmsg);
+
+	activeAirports = active_airports;
+	activeArrRunways = active_arr_runways;
+	activeDepRunways = active_dep_runways;
 }
 
 string BeluxPlugin::SwapGate(string callsign, string gate)
