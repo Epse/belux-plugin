@@ -61,16 +61,27 @@ std::string ProcedureAssigner::get_runway(const EuroScopePlugIn::CFlightPlan& fl
 {
 	const std::string origin = flight_plan.GetFlightPlanData().GetOrigin();
 	const auto& origin_runways = departure_runways->at(origin);
-	// FIXME: Follow minors procedure
-	if (origin != "EBBR")
-	{
-		return origin_runways.at(0);
-	}
 
-	// Tiny optimisation
+	// Tiny optimisation, also takes care of our single-runway minors
 	if (departure_runways->at(origin).size() == 1)
 		return origin_runways.at(0);
 
+	if (origin == "EBLG")
+	{
+		// For EBLG, we never assign 22R/04L by default
+		const bool has_04R = std::binary_search(origin_runways.begin(), origin_runways.end(), std::string("04R"));
+		const bool has_22L = std::binary_search(origin_runways.begin(), origin_runways.end(), std::string("22L"));
+
+		if (has_04R)
+			return "04R";
+
+		if (has_22L)
+			return "22L";
+
+		return origin_runways.at(0); // IDK what to do here woops
+	}
+
+	// Should only get here at EBBR
 	const bool has_25R = std::binary_search(std::begin(origin_runways), std::end(origin_runways),
 	                                        std::string("25R"));
 	const bool has_19 = std::binary_search(std::begin(origin_runways), std::end(origin_runways),
