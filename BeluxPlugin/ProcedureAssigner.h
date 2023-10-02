@@ -25,7 +25,7 @@ private:
 	bool should_process(const EuroScopePlugIn::CFlightPlan& flight_plan, bool ignore_already_assigned = false) const;
 	SidAllocation sid_allocation;
 	LaraParser lara_parser;
-	std::string get_runway(const EuroScopePlugIn::CFlightPlan& flight_plan, const std::string& sid_fix) const;
+	std::optional<std::string> get_runway(const EuroScopePlugIn::CFlightPlan& flight_plan, const std::string& sid_fix) const;
 
 public:
 	ProcedureAssigner(std::function<void(const std::string&)> printer);
@@ -57,4 +57,5 @@ public:
 	 */
 	void on_disconnect(const EuroScopePlugIn::CFlightPlan& flight_plan) const;
 	void set_departure_runways(const std::map<std::string, std::vector<std::string>>& active_departure_runways) const;
+	std::optional<SidEntry> suggest(const EuroScopePlugIn::CFlightPlan& flight_plan) const;
 };

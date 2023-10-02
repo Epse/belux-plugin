@@ -56,11 +56,17 @@ bool ProcedureAssigner::should_process(const EuroScopePlugIn::CFlightPlan& fligh
 	return true;
 }
 
-std::string ProcedureAssigner::get_runway(const EuroScopePlugIn::CFlightPlan& flight_plan,
+std::optional<std::string> ProcedureAssigner::get_runway(const EuroScopePlugIn::CFlightPlan& flight_plan,
                                           const std::string& sid_fix) const
 {
 	const std::string origin = flight_plan.GetFlightPlanData().GetOrigin();
+	if (departure_runways->find(origin) == departure_runways->end())
+	{
+		return {};
+	}
 	const auto& origin_runways = departure_runways->at(origin);
+	if (origin_runways.size() < 1)
+		return {};
 
 	// Tiny optimisation, also takes care of our single-runway minors
 	if (departure_runways->at(origin).size() == 1)
@@ -128,42 +134,12 @@ bool ProcedureAssigner::process_flight_plan(const EuroScopePlugIn::CFlightPlan& 
 	if (!should_process(flight_plan, force))
 		return false;
 
-	const auto route = flight_plan.GetExtractedRoute();
-	std::string sid_fix;
-	const std::string sid_fixes[] = {"CIV", "NIK", "LNO", "DENUT", "KOK", "SPI", "HELEN", "PITES", "SOPOK"};
-	for (int i = 0; i < route.GetPointsNumber(); i++)
-	{
-		std::string fix = route.GetPointName(i);
-		if (std::binary_search(std::begin(sid_fixes), std::end(sid_fixes), fix))
-		{
-			sid_fix = fix;
-			break;
-		}
-	}
-
-	if (sid_fix.empty())
-		return false;
-
-	const std::string runway = get_runway(flight_plan, sid_fix);
-
-	auto flight_plan_data = flight_plan.GetFlightPlanData();
-	time_t raw_time;
-	time(&raw_time);
-	// Get a tm struct for now in UTC
-	struct tm now;
-	gmtime_s(&now, &raw_time);
-
-	const auto areas = lara_parser.get_active(now);
-
-	const auto maybe_sid = sid_allocation.find(flight_plan_data.GetOrigin(),
-	                                           sid_fix,
-	                                           flight_plan_data.GetDestination(),
-	                                           flight_plan_data.GetEngineNumber(),
-	                                           runway, now, areas);
+	const auto maybe_sid = suggest(flight_plan);
 
 	if (!maybe_sid.has_value())
 		return false; // Maybe we should log this, but can't at the moment...
 
+	auto flight_plan_data = flight_plan.GetFlightPlanData();
 	std::string route_string = flight_plan_data.GetRoute();
 	/*
 	 * We now need to turn our route into something like CIV5C/25R CIV ...
@@ -184,9 +160,9 @@ bool ProcedureAssigner::process_flight_plan(const EuroScopePlugIn::CFlightPlan& 
 	size_t end = route_string.find(' ', sid_pos);
 	end = end == std::string::npos ? sid_pos + maybe_sid.value().exit_point.length() : end + 1;
 
-	route_string = std::string(flight_plan_data.GetOrigin()) + "/" + runway
-		+ " " + maybe_sid.value().sid
-		+ " " + maybe_sid.value().exit_point
+	route_string = std::string(flight_plan_data.GetOrigin()) + "/" + maybe_sid->rwy
+		+ " " + maybe_sid->sid
+		+ " " + maybe_sid->exit_point
 		+ " " + route_string.substr(end);
 	flight_plan_data.SetRoute(route_string.c_str());
 
@@ -230,4 +206,44 @@ void ProcedureAssigner::set_departure_runways(
 	const std::map<std::string, std::vector<std::string>>& active_departure_runways) const
 {
 	(*departure_runways) = active_departure_runways;
+}
+
+std::optional<SidEntry> ProcedureAssigner::suggest(const EuroScopePlugIn::CFlightPlan& flight_plan) const
+{
+	const auto route = flight_plan.GetExtractedRoute();
+	std::string sid_fix;
+	const std::string sid_fixes[] = {"CIV", "NIK", "LNO", "DENUT", "KOK", "SPI", "HELEN", "PITES", "SOPOK"};
+	for (int i = 0; i < route.GetPointsNumber(); i++)
+	{
+		std::string fix = route.GetPointName(i);
+		if (std::binary_search(std::begin(sid_fixes), std::end(sid_fixes), fix))
+		{
+			sid_fix = fix;
+			break;
+		}
+	}
+
+	if (sid_fix.empty())
+		return {};
+
+	const auto maybe_runway = get_runway(flight_plan, sid_fix);
+	if (!maybe_runway.has_value())
+		return {};
+
+	const auto& runway = maybe_runway.value();
+
+	const auto flight_plan_data = flight_plan.GetFlightPlanData();
+	time_t raw_time;
+	time(&raw_time);
+	// Get a tm struct for now in UTC
+	tm now;
+	gmtime_s(&now, &raw_time);
+
+	const auto areas = lara_parser.get_active(now);
+
+	return sid_allocation.find(flight_plan_data.GetOrigin(),
+	                                           sid_fix,
+	                                           flight_plan_data.GetDestination(),
+	                                           flight_plan_data.GetEngineNumber(),
+	                                           runway, now, areas);
 }

@@ -26,6 +26,14 @@
 using namespace std;
 using namespace EuroScopePlugIn;
 
+enum TagDefinitions: int {
+	item_gate_assign = 1,
+	function_gate_refresh,
+	item_mach_number,
+	function_force_sid,
+	item_proc_suggestion,
+};
+
 class BeluxPlugin :
 	public EuroScopePlugIn::CPlugIn
 {

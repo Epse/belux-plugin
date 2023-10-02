@@ -28,12 +28,6 @@ bool force_new_procedure = false;
 
 int timeout_value = 1000;
 
-// internal ID lists
-constexpr int TAG_ITEM_GATE_ASGN = 1;
-constexpr int TAG_FUNCTION_REFRESH_GATE = 2;
-constexpr int TAG_ITEM_MACH_NUMBER = 3;
-constexpr int TAG_FUNCTION_FORCE_SID = 4;
-
 // Time (in seconds) before we request new information about this flight from the API.
 constexpr int DATA_RETENTION_LENGTH = 60;
 
@@ -72,10 +66,11 @@ BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY
 	processed = new set<string>();
 
 	// Register Tag item(s).
-	RegisterTagItemType("Assigned Gate", TAG_ITEM_GATE_ASGN);
-	RegisterTagItemFunction("refresh assigned gate", TAG_FUNCTION_REFRESH_GATE);
-	RegisterTagItemType("Mach number", TAG_ITEM_MACH_NUMBER);
-	RegisterTagItemFunction("Force RWY/SID", TAG_FUNCTION_FORCE_SID);
+	RegisterTagItemType("Assigned Gate", TagDefinitions::item_gate_assign);
+	RegisterTagItemFunction("refresh assigned gate", TagDefinitions::function_gate_refresh);
+	RegisterTagItemType("Mach number", TagDefinitions::item_mach_number);
+	RegisterTagItemFunction("Assign RWY/SID", TagDefinitions::function_force_sid);
+	RegisterTagItemType("Procedure Suggestion", TagDefinitions::item_proc_suggestion);
 
 	ProcessMETAR("EBLG", GetAirportInfo("EBLG"));
 	if (function_fetch_gates)
@@ -358,11 +353,11 @@ void BeluxPlugin::OnFunctionCall(int FunctionId, const char* sItemString, POINT 
 {
 	switch (FunctionId)
 	{
-	case TAG_FUNCTION_REFRESH_GATE:
+	case TagDefinitions::function_gate_refresh:
 		if (function_fetch_gates)
 			FetchAndProcessGates();
 		break;
-	case TAG_FUNCTION_FORCE_SID:
+	case TagDefinitions::function_force_sid:
 		if (!procedureAssigner->process_flight_plan(FlightPlanSelectASEL(), true))
 		{
 			printMessage("SID", "Failed to assign requested SID/RWY");
@@ -433,28 +428,26 @@ void BeluxPlugin::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget,
                                char sItemString[16], int* pColorCode,
                                COLORREF* pRGB, double* pFontSize)
 {
-	double lat, lon, hdg, mach;
-	tuple<double, double> result;
-	int gs, FL, ias;
-	string cs;
 	// Only work on tag items we actually care about.
 	switch (ItemCode)
 	{
-	case TAG_ITEM_MACH_NUMBER:
-		if (function_mach_visualisation)
+	case TagDefinitions::item_mach_number:
+		if (!function_mach_visualisation)
+			break;
+
 		{
-			cs = FlightPlan.GetCallsign();
-			gs = FlightPlan.GetCorrelatedRadarTarget().GetGS();
-			FL = (int)(FlightPlan.GetCorrelatedRadarTarget().GetPosition().GetFlightLevel() / 100);
-			hdg = FlightPlan.GetCorrelatedRadarTarget().GetTrackHeading();
-			lat = FlightPlan.GetCorrelatedRadarTarget().GetPosition().GetPosition().m_Latitude;
-			lon = FlightPlan.GetCorrelatedRadarTarget().GetPosition().GetPosition().m_Longitude;
+			const string cs = FlightPlan.GetCallsign();
+			const int gs = FlightPlan.GetCorrelatedRadarTarget().GetGS();
+			const int FL = (int)(FlightPlan.GetCorrelatedRadarTarget().GetPosition().GetFlightLevel() / 100);
+			const double hdg = FlightPlan.GetCorrelatedRadarTarget().GetTrackHeading();
+			const double lat = FlightPlan.GetCorrelatedRadarTarget().GetPosition().GetPosition().m_Latitude;
+			const double lon = FlightPlan.GetCorrelatedRadarTarget().GetPosition().GetPosition().m_Longitude;
 			if (gs > 0)
 			{
-				result = utils.calculate_mach(cs, FL, gs, hdg, lat, lon);
+				const auto result = utils.calculate_mach(cs, FL, gs, hdg, lat, lon);
 				//printDebugMessage(to_string(gs) + " " + to_string(FL) + " " + to_string(hdg) + " " + to_string(lat) + " " + to_string(lon) + "--> " + to_string(mach));
-				mach = get<0>(result);
-				ias = (int)get<1>(result);
+				const double mach = get<0>(result);
+				const int ias = (int)get<1>(result);
 				std::stringstream stream;
 				stream << std::fixed << std::setprecision(3) << mach;
 				string output;
@@ -471,10 +464,11 @@ void BeluxPlugin::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget,
 		}
 		break;
 
-	case TAG_ITEM_GATE_ASGN:
-		if (function_fetch_gates)
+	case TagDefinitions::item_gate_assign:
+		if (!function_fetch_gates)
+			break;
 		{
-			string cs = FlightPlan.GetCallsign();
+			const string cs = FlightPlan.GetCallsign();
 			if (gatePlanner.gate_list.find(cs) != gatePlanner.gate_list.end())
 			{
 				if (gatePlanner.gate_list[cs].color != NULL)
@@ -483,10 +477,29 @@ void BeluxPlugin::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget,
 					(*pRGB) = gatePlanner.gate_list[cs].color;
 				}
 
-				string gateItem = gatePlanner.gate_list[cs].gate + (gatePlanner.gate_list[cs].suggest25R ? "*" : "");
+				const string gateItem = gatePlanner.gate_list[cs].gate + (gatePlanner.gate_list[cs].suggest25R
+					                                                          ? "*"
+					                                                          : "");
 				strcpy_s(sItemString, 8, gateItem.c_str());
 			}
 		}
+		break;
+
+	case TagDefinitions::item_proc_suggestion:
+		{
+		printDebugMessage("SID", "Getting suggestions for " + string(FlightPlan.GetCallsign()));
+			const auto suggestion = procedureAssigner->suggest(FlightPlan);
+			if (!suggestion.has_value())
+			{
+				strcpy_s(sItemString, 16, "?"); // Indicate an error case
+				break;
+			}
+
+			const string text = suggestion->sid + "/" + suggestion->rwy;
+			strcpy_s(sItemString, 16, text.c_str());
+			sItemString[15] = '\0'; // Ensure proper null termination
+		}
+		break;
 	}
 }
 
@@ -602,20 +615,20 @@ void BeluxPlugin::getActiveRunways()
 
 		if (rwy.IsElementActive(true, 0))
 		{
-			active_dep_runways[rwy.GetAirportName()].push_back(rwy.GetRunwayName(0));
+			active_dep_runways[ad_name].push_back(rwy.GetRunwayName(0));
 		}
 		if (rwy.IsElementActive(false, 0))
 		{
-			active_arr_runways[rwy.GetAirportName()].push_back(rwy.GetRunwayName(0));
+			active_arr_runways[ad_name].push_back(rwy.GetRunwayName(0));
 		}
 
 		if (rwy.IsElementActive(true, 1))
 		{
-			active_dep_runways[rwy.GetAirportName()].push_back(rwy.GetRunwayName(1));
+			active_dep_runways[ad_name].push_back(rwy.GetRunwayName(1));
 		}
 		if (rwy.IsElementActive(false, 1))
 		{
-			active_arr_runways[rwy.GetAirportName()].push_back(rwy.GetRunwayName(1));
+			active_arr_runways[ad_name].push_back(rwy.GetRunwayName(1));
 		}
 	}
 
@@ -925,12 +938,6 @@ bool BeluxPlugin::OnCompileCommand(const char* sCommandLine)
 		return true;
 	}
 
-	// FIXME: DELETEME
-	if (boost::algorithm::starts_with(sCommandLine, ".belux test-areas"))
-	{
-
-		return true;
-	}
 	return false;
 }
 
