@@ -487,13 +487,14 @@ void BeluxPlugin::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget,
 
 	case TagDefinitions::item_proc_suggestion:
 		{
-		printDebugMessage("SID", "Getting suggestions for " + string(FlightPlan.GetCallsign()));
+		// TODO: colour if the suggestion does not match, or perhaps blank
 			const auto suggestion = procedureAssigner->suggest(FlightPlan);
 			if (!suggestion.has_value())
 			{
 				strcpy_s(sItemString, 16, "?"); // Indicate an error case
 				break;
 			}
+
 
 			const string text = suggestion->sid + "/" + suggestion->rwy;
 			strcpy_s(sItemString, 16, text.c_str());

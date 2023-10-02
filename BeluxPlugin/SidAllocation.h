@@ -17,8 +17,8 @@ struct TimeActivation
 enum aircraft_class
 {
 	any = 1,
-	four_engined = 2,
-	non_four_engined = 3
+	non_four_engined = 2,
+	four_engined = 3,
 };
 
 struct SidEntry
@@ -60,7 +60,8 @@ public:
 	std::optional<SidEntry> find(const std::string& adep, const std::string& exit_point, const std::string& ades,
 	                             const int engine_count, const std::string& runway,
 	                             const tm& now, const std::vector<std::string>& active_areas) const;
-	std::set<std::string> for_airport(const std::string& adep) const;
+	std::set<std::string> sids_for_airport(const std::string& adep) const;
+	std::set<std::string> fixes_for_airport(const std::string& airport) const;
 
 private:
 	std::unique_ptr<std::vector<SidEntry>> entries;

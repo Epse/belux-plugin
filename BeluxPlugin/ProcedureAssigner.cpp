@@ -35,7 +35,7 @@ bool ProcedureAssigner::should_process(const EuroScopePlugIn::CFlightPlan& fligh
 	{
 		const std::string route = flight_plan.GetFlightPlanData().GetRoute();
 		debug_printer("Checking if we have a SID for " + callsign + " in " + route);
-		const auto sids = sid_allocation.for_airport(adep);
+		const auto sids = sid_allocation.sids_for_airport(adep);
 		for (auto& sid : sids)
 		{
 			if (route.find(sid) != std::string::npos)
@@ -51,7 +51,7 @@ bool ProcedureAssigner::should_process(const EuroScopePlugIn::CFlightPlan& fligh
 }
 
 std::optional<std::string> ProcedureAssigner::get_runway(const EuroScopePlugIn::CFlightPlan& flight_plan,
-                                          const std::string& sid_fix) const
+                                                         const std::string& sid_fix) const
 {
 	const std::string origin = flight_plan.GetFlightPlanData().GetOrigin();
 	if (departure_runways->find(origin) == departure_runways->end())
@@ -173,7 +173,6 @@ size_t ProcedureAssigner::fetch_sid_allocation() const
 
 size_t ProcedureAssigner::setup_lara() const
 {
-
 	// Getting the DLL file folder
 	char dll_path_file[_MAX_PATH];
 	GetModuleFileNameA(reinterpret_cast<HINSTANCE>(&__ImageBase), dll_path_file, sizeof(dll_path_file));
@@ -182,7 +181,7 @@ size_t ProcedureAssigner::setup_lara() const
 	lara_path += "\\TopSky\\TopSkyAreasManualAct.txt";
 	std::ifstream ifs(lara_path);
 	const std::string allocation_file((std::istreambuf_iterator<char>(ifs)),
-								(std::istreambuf_iterator<char>()));
+	                                  (std::istreambuf_iterator<char>()));
 	return lara_parser.parse_string(allocation_file);
 }
 
@@ -204,18 +203,25 @@ void ProcedureAssigner::set_departure_runways(
 
 std::optional<SidEntry> ProcedureAssigner::suggest(const EuroScopePlugIn::CFlightPlan& flight_plan) const
 {
-	const auto route = flight_plan.GetExtractedRoute();
+	const auto route_text = std::string(flight_plan.GetFlightPlanData().GetRoute());
 	std::string sid_fix;
-	const std::string sid_fixes[] = {"CIV", "NIK", "LNO", "DENUT", "KOK", "SPI", "HELEN", "PITES", "SOPOK"};
-	for (int i = 0; i < route.GetPointsNumber(); i++)
+	const auto sid_fixes = sid_allocation.fixes_for_airport(flight_plan.GetFlightPlanData().GetOrigin());
+
+	typedef boost::split_iterator<std::string::const_iterator> SplitIter;
+	for (SplitIter i = boost::make_split_iterator(route_text, boost::token_finder(boost::is_space()));
+	     i != SplitIter(); ++i)
 	{
-		std::string fix = route.GetPointName(i);
-		if (std::binary_search(std::begin(sid_fixes), std::end(sid_fixes), fix))
+		auto route_element = boost::copy_range<std::string>(*i);
+		for (auto fix: sid_fixes)
 		{
-			sid_fix = fix;
-			break;
+			if (route_element.find(fix) != std::string::npos)
+			{
+				sid_fix = fix;
+				goto found_sid; // I know, I know
+			}
 		}
 	}
+	found_sid:
 
 	if (sid_fix.empty())
 		return {};
@@ -236,8 +242,8 @@ std::optional<SidEntry> ProcedureAssigner::suggest(const EuroScopePlugIn::CFligh
 	const auto areas = lara_parser.get_active(now);
 
 	return sid_allocation.find(flight_plan_data.GetOrigin(),
-	                                           sid_fix,
-	                                           flight_plan_data.GetDestination(),
-	                                           flight_plan_data.GetEngineNumber(),
-	                                           runway, now, areas);
+	                           sid_fix,
+	                           flight_plan_data.GetDestination(),
+	                           flight_plan_data.GetEngineNumber(),
+	                           runway, now, areas);
 }

@@ -62,7 +62,7 @@ std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::
 	return {};
 }
 
-std::set<std::string> SidAllocation::for_airport(const std::string& adep) const
+std::set<std::string> SidAllocation::sids_for_airport(const std::string& adep) const
 {
 	std::set<std::string> result;
 	for (auto& entry : *entries)
@@ -71,6 +71,20 @@ std::set<std::string> SidAllocation::for_airport(const std::string& adep) const
 			continue;
 
 		result.insert(entry.sid);
+	}
+
+	return result;
+}
+
+std::set<std::string> SidAllocation::fixes_for_airport(const std::string& airport) const
+{
+	std::set<std::string> result;
+	for (auto& entry : *entries)
+	{
+		if (entry.adep != airport)
+			continue;
+
+		result.insert(entry.exit_point);
 	}
 
 	return result;
