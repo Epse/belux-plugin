@@ -491,7 +491,6 @@ void BeluxPlugin::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget,
 
 	case TagDefinitions::item_proc_suggestion:
 		{
-			// TODO: colour if the suggestion does not match, or perhaps blank
 			const auto callsign = string(FlightPlan.GetCallsign());
 			const auto suggestion = suggestion_cache->find(callsign) != suggestion_cache->end()
 				? suggestion_cache->at(callsign)
@@ -500,6 +499,16 @@ void BeluxPlugin::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget,
 			{
 				strcpy_s(sItemString, 16, "?"); // Indicate an error case
 				break;
+			}
+
+			const string route = FlightPlan.GetFlightPlanData().GetRoute();
+			if (suggestion->rwy != string(FlightPlan.GetFlightPlanData().GetDepartureRwy())
+				|| route.find(suggestion->sid) == std::string::npos)
+			{
+				(*pColorCode) = EuroScopePlugIn::TAG_COLOR_INFORMATION;
+			} else
+			{
+				(*pColorCode) = EuroScopePlugIn::TAG_COLOR_NON_CONCERNED;
 			}
 
 
