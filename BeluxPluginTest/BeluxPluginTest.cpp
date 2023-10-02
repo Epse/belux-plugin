@@ -36,7 +36,7 @@ namespace BeluxPluginTest
 			Assert::AreEqual(static_cast<size_t>(168), parsed);
 		}
 
-		TEST_METHOD(Test2DNotOnWeekdays)
+		TEST_METHOD(TestDNotOnWeekdays)
 		{
 			const auto allocation_file = get_allocation_file();
 			const SidAllocation allocation;
@@ -51,10 +51,10 @@ namespace BeluxPluginTest
 			fake_now.tm_hour = 22; // Late, to perhaps trigger the four-engine case.
 
 			const std::vector<std::string> areas;
-			const auto maybe_sid = allocation.find("EBBR", "CIV", "EKCH",
+			const auto maybe_sid = allocation.find("EBBR", "LNO", "EKCH",
 			                                       2, "25R", fake_now, areas);
 			Assert::IsTrue(maybe_sid.has_value());
-			Assert::AreNotEqual(std::string("CIV2D"), maybe_sid.value().sid);
+			Assert::AreNotEqual(std::string("LNO4D"), maybe_sid.value().sid);
 		}
 
 		TEST_METHOD(AssignsCIV2DForFourEngineOnWeekdays)
@@ -65,14 +65,14 @@ namespace BeluxPluginTest
 			fake_now.tm_mday = 25;
 			fake_now.tm_mon = 8; // September
 			fake_now.tm_year = 2023;
-			fake_now.tm_hour = 22; // Late, to perhaps trigger the four-engine case.
+			fake_now.tm_hour = 12;
 
 			const std::vector<std::string> areas;
-			const auto maybe_sid = allocator.find("EBBR", "CIV", "EKCH",
+			const auto maybe_sid = allocator.find("EBBR", "LNO", "EKCH",
 				4, "25R", fake_now, areas);
 
 			Assert::IsTrue(maybe_sid.has_value());
-			Assert::AreEqual(std::string("CIV2D"), maybe_sid->sid);
+			Assert::AreEqual(std::string("LNO4D"), maybe_sid->sid);
 
 		}
 	};
