@@ -14,12 +14,6 @@ bool ProcedureAssigner::should_process(const EuroScopePlugIn::CFlightPlan& fligh
 		return false; // No reason to change it from under the ATCO
 
 	const auto adep = std::string(flight_plan.GetFlightPlanData().GetOrigin());
-
-	if (adep != "EBBR")
-	{
-		return false; // FIXME: we currently only have runways for EBBR, so we can only handle EBBR
-	}
-
 	if (std::find(std::begin(airports), std::end(airports), adep) ==
 		std::end(airports))
 		return false; // Not an airport we handle
@@ -65,7 +59,7 @@ std::optional<std::string> ProcedureAssigner::get_runway(const EuroScopePlugIn::
 		return {};
 	}
 	const auto& origin_runways = departure_runways->at(origin);
-	if (origin_runways.size() < 1)
+	if (origin_runways.empty())
 		return {};
 
 	// Tiny optimisation, also takes care of our single-runway minors
