@@ -118,20 +118,12 @@ ProcedureAssigner::ProcedureAssigner(std::function<void(const std::string&)> pri
 }
 
 // TODO: a lot of the data in this loop should really be cached between planes in one iteration...
-bool ProcedureAssigner::process_flight_plan(const EuroScopePlugIn::CFlightPlan& flight_plan, bool force) const
+std::optional<SidEntry> ProcedureAssigner::process_flight_plan(const EuroScopePlugIn::CFlightPlan& flight_plan, bool force) const
 {
-	if (!force && processed->find(std::string(flight_plan.GetCallsign())) != processed->end())
-		return false; // Already processed
-
-	processed->insert(std::string(flight_plan.GetCallsign()));
-
-	if (!should_process(flight_plan, force))
-		return false;
-
-	const auto maybe_sid = suggest(flight_plan);
+	const auto maybe_sid = suggest(flight_plan, force);
 
 	if (!maybe_sid.has_value())
-		return false; // Maybe we should log this, but can't at the moment...
+		return {}; // Maybe we should log this, but can't at the moment...
 
 	auto flight_plan_data = flight_plan.GetFlightPlanData();
 	std::string route_string = flight_plan_data.GetRoute();
@@ -149,7 +141,7 @@ bool ProcedureAssigner::process_flight_plan(const EuroScopePlugIn::CFlightPlan& 
 	 */
 	const size_t sid_pos = route_string.rfind(maybe_sid.value().exit_point);
 	if (sid_pos >= route_string.length())
-		return false; // Did not find the SID exit point, should be impossible, maybe log?
+		return {}; // Did not find the SID exit point, should be impossible, maybe log?
 
 	size_t end = route_string.find(' ', sid_pos);
 	end = end == std::string::npos ? sid_pos + maybe_sid.value().exit_point.length() : end + 1;
@@ -160,7 +152,7 @@ bool ProcedureAssigner::process_flight_plan(const EuroScopePlugIn::CFlightPlan& 
 		+ " " + route_string.substr(end);
 	flight_plan_data.SetRoute(route_string.c_str());
 
-	return flight_plan_data.AmendFlightPlan();
+	return flight_plan_data.AmendFlightPlan() ? maybe_sid.value() : std::optional<SidEntry>{};
 }
 
 size_t ProcedureAssigner::fetch_sid_allocation() const
@@ -196,13 +188,28 @@ void ProcedureAssigner::on_disconnect(const EuroScopePlugIn::CFlightPlan& flight
 }
 
 void ProcedureAssigner::set_departure_runways(
-	const std::map<std::string, std::vector<std::string>>& active_departure_runways) const
+	const std::map<std::string, std::vector<std::string>>& active_departure_runways)
 {
 	(*departure_runways) = active_departure_runways;
+	airports.erase(airports.begin(), airports.end());
+
+
+	for (const auto rwy: active_departure_runways)
+	{
+		airports.insert(rwy.first);
+	}
 }
 
-std::optional<SidEntry> ProcedureAssigner::suggest(const EuroScopePlugIn::CFlightPlan& flight_plan) const
+std::optional<SidEntry> ProcedureAssigner::suggest(const EuroScopePlugIn::CFlightPlan& flight_plan, bool force) const
 {
+	if (!force && processed->find(std::string(flight_plan.GetCallsign())) != processed->end())
+		return {}; // Already processed
+
+	processed->insert(std::string(flight_plan.GetCallsign()));
+
+	if (!should_process(flight_plan, force))
+		return {};
+
 	const auto route_text = std::string(flight_plan.GetFlightPlanData().GetRoute());
 	std::string sid_fix;
 	const auto sid_fixes = sid_allocation.fixes_for_airport(flight_plan.GetFlightPlanData().GetOrigin());

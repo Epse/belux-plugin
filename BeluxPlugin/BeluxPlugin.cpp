@@ -43,8 +43,7 @@ map<string, vector<string>> activeArrRunways;
 
 int liege_QNH = 0;
 
-string last_processed = "";
-
+unique_ptr<map<string, SidEntry>> suggestion_cache;
 
 BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY_PLUGIN_NAME, MY_PLUGIN_VERSION,
                                          MY_PLUGIN_DEVELOPER, MY_PLUGIN_COPYRIGHT)
@@ -52,6 +51,7 @@ BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY
 	versionCheck();
 	loadJSONconfig();
 
+	suggestion_cache = make_unique<map<string, SidEntry>>();
 	procedureAssigner = new ProcedureAssigner([this](const std::string& text)
 	{
 		printDebugMessage("SID", text);
@@ -242,13 +242,17 @@ void BeluxPlugin::ProcessFlightPlans()
 		string dep_airport = fp.GetFlightPlanData().GetOrigin();
 		string callsign = fp.GetCallsign();
 
-		if (function_check_runway_and_sid || force_new_procedure)
 		{
-			if (procedureAssigner->process_flight_plan(fp, force_new_procedure))
+			const bool in_cache = suggestion_cache->find(string(fp.GetCallsign())) != suggestion_cache->end();
+			const auto sid = (function_check_runway_and_sid || force_new_procedure)
+				                 ? procedureAssigner->process_flight_plan(fp, force_new_procedure)
+				                 : procedureAssigner->suggest(fp, !in_cache);
+			if (sid.has_value())
 			{
-				printDebugMessage("SID", "Processed " + std::string(fp.GetCallsign()));
+				suggestion_cache->insert_or_assign(string(fp.GetCallsign()), sid.value());
 			}
 		}
+
 
 		if (activeAirports.find(dep_airport) == activeAirports.end() // IF Not found in belux airport list
 			|| !fp.IsValid() || !fp.GetCorrelatedRadarTarget().IsValid()
@@ -487,8 +491,11 @@ void BeluxPlugin::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget,
 
 	case TagDefinitions::item_proc_suggestion:
 		{
-		// TODO: colour if the suggestion does not match, or perhaps blank
-			const auto suggestion = procedureAssigner->suggest(FlightPlan);
+			// TODO: colour if the suggestion does not match, or perhaps blank
+			const auto callsign = string(FlightPlan.GetCallsign());
+			const auto suggestion = suggestion_cache->find(callsign) != suggestion_cache->end()
+				? suggestion_cache->at(callsign)
+				: std::optional<SidEntry>{};
 			if (!suggestion.has_value())
 			{
 				strcpy_s(sItemString, 16, "?"); // Indicate an error case

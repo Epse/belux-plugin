@@ -11,9 +11,9 @@
 class ProcedureAssigner
 {
 private:
-	const std::string airports[1] = {"EBBR"};
 	std::set<std::string>* processed;
 	std::map<std::string, std::vector<std::string>>* departure_runways;
+	std::set<std::string> airports;
 	std::function<void(const std::string&)> debug_printer;
 	/**
  * \brief Verifies if we should still process the flight plan. This checks, but does not modify the `processed` var,
@@ -34,9 +34,10 @@ public:
 	 * This method is idempotent and can be called as often as desired on the same flight plan.
 	 * Changes by controllers will not be overwritten.
 	 * \param flight_plan Flight plan to process
-	 * \return true if successfully processed
+	 * \param force Determines if we will assign for those with an existing SID
+	 * \return A SidEntry if successful, otherwise none
 	 */
-	bool process_flight_plan(const EuroScopePlugIn::CFlightPlan& flight_plan, bool force = false) const;
+	std::optional<SidEntry> process_flight_plan(const EuroScopePlugIn::CFlightPlan& flight_plan, bool force = false) const;
 	/**
 	 * \brief Fetches the SID allocations from the internet and parses these.
 	 * \return Amount of allocation rules retrieved and parsed.
@@ -56,6 +57,6 @@ public:
 	 * \param flight_plan The disconnected flight plan
 	 */
 	void on_disconnect(const EuroScopePlugIn::CFlightPlan& flight_plan) const;
-	void set_departure_runways(const std::map<std::string, std::vector<std::string>>& active_departure_runways) const;
-	std::optional<SidEntry> suggest(const EuroScopePlugIn::CFlightPlan& flight_plan) const;
+	void set_departure_runways(const std::map<std::string, std::vector<std::string>>& active_departure_runways);
+	std::optional<SidEntry> suggest(const EuroScopePlugIn::CFlightPlan& flight_plan, bool force = false) const;
 };
