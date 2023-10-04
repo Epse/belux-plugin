@@ -3,6 +3,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <variant>
 
 #include "EuroScopePlugIn.h"
 #include "SidAllocation.h"
@@ -11,9 +12,9 @@
 class ProcedureAssigner
 {
 private:
-	std::set<std::string>* processed;
 	std::map<std::string, std::vector<std::string>>* departure_runways;
 	std::set<std::string> airports;
+	std::map<std::string, std::optional<SidEntry>> cache;
 	std::function<void(const std::string&)> debug_printer;
 	/**
  * \brief Verifies if we should still process the flight plan. This checks, but does not modify the `processed` var,
@@ -37,7 +38,7 @@ public:
 	 * \param force Determines if we will assign for those with an existing SID
 	 * \return A SidEntry if successful, otherwise none
 	 */
-	std::optional<SidEntry> process_flight_plan(const EuroScopePlugIn::CFlightPlan& flight_plan, bool force = false) const;
+	std::optional<SidEntry> process_flight_plan(const EuroScopePlugIn::CFlightPlan& flight_plan, bool force = false);
 	/**
 	 * \brief Fetches the SID allocations from the internet and parses these.
 	 * \return Amount of allocation rules retrieved and parsed.
@@ -51,12 +52,18 @@ public:
 	/**
 	 * \brief Marks all flight plans for processing on next update, regardless of previous state.
 	 */
-	void reprocess_all() const;
+	void reprocess_all();
 	/**
 	 * \brief Handles a pilot disconnecting and freeing a callsign
 	 * \param flight_plan The disconnected flight plan
 	 */
-	void on_disconnect(const EuroScopePlugIn::CFlightPlan& flight_plan) const;
+	void on_disconnect(const EuroScopePlugIn::CFlightPlan& flight_plan);
 	void set_departure_runways(const std::map<std::string, std::vector<std::string>>& active_departure_runways);
-	std::optional<SidEntry> suggest(const EuroScopePlugIn::CFlightPlan& flight_plan, bool force = false) const;
+	/**
+	 * \brief Suggests, but does not assign, a procedure for the provided flight plan, using caching.
+	 * \param flight_plan Flight plan to suggest a procedure for
+	 * \param ignore_already_assigned Suggest for flight plans with a SID already assigned
+	 * \return Perhaps a suggestion
+	 */
+	std::optional<SidEntry> suggest(const EuroScopePlugIn::CFlightPlan& flight_plan, bool ignore_already_assigned = false);
 };

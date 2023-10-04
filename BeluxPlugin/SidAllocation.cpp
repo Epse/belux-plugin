@@ -2,6 +2,7 @@
 #include "SidAllocation.h"
 
 #include <sstream>
+#include <variant>
 #include <vector>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string.hpp>
@@ -26,10 +27,10 @@ size_t SidAllocation::parse_string(const std::string& input) const
 }
 
 std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::string& exit_point,
-                                            const std::string& ades, const int engine_count,
-                                            const std::string& runway,
-                                            const tm& now,
-                                            const std::vector<std::string>& active_areas) const
+                                           const std::string& ades, const int engine_count,
+                                           const std::string& runway,
+                                           const tm& now,
+                                           const std::vector<std::string>& active_areas) const
 {
 	for (auto entry : *entries)
 	{

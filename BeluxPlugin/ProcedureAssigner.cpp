@@ -6,6 +6,7 @@
 #include <list>
 #include <boost/algorithm/string.hpp>
 #include <utility>
+#include <variant>
 
 bool ProcedureAssigner::should_process(const EuroScopePlugIn::CFlightPlan& flight_plan,
                                        bool ignore_already_assigned) const
@@ -112,18 +113,31 @@ std::optional<std::string> ProcedureAssigner::get_runway(const EuroScopePlugIn::
 
 ProcedureAssigner::ProcedureAssigner(std::function<void(const std::string&)> printer)
 {
-	processed = new std::set<std::string>();
 	departure_runways = new std::map<std::string, std::vector<std::string>>();
 	debug_printer = std::move(printer);
 }
 
 // TODO: a lot of the data in this loop should really be cached between planes in one iteration...
-std::optional<SidEntry> ProcedureAssigner::process_flight_plan(const EuroScopePlugIn::CFlightPlan& flight_plan, bool force) const
+std::optional<SidEntry> ProcedureAssigner::process_flight_plan(const EuroScopePlugIn::CFlightPlan& flight_plan,
+                                                               bool force)
 {
+	const std::string callsign = flight_plan.GetCallsign();
+
+	if (!should_process(flight_plan, force))
+	{
+		debug_printer(callsign + ": Unconcerned during process");
+		return {};
+	}
+
 	const auto maybe_sid = suggest(flight_plan, force);
 
 	if (!maybe_sid.has_value())
-		return {}; // Maybe we should log this, but can't at the moment...
+	{
+		debug_printer(callsign + ": Empty Sid entry during process");
+		return {};
+	}
+
+	const auto sid = maybe_sid.value();
 
 	auto flight_plan_data = flight_plan.GetFlightPlanData();
 	std::string route_string = flight_plan_data.GetRoute();
@@ -139,20 +153,23 @@ std::optional<SidEntry> ProcedureAssigner::process_flight_plan(const EuroScopePl
 	 * We only know that somewhere in there, we *should* find 'CIV '.
 	 * We will thus simply remove everything before the SID exit fix, and start afresh
 	 */
-	const size_t sid_pos = route_string.rfind(maybe_sid.value().exit_point);
+	const size_t sid_pos = route_string.rfind(sid.exit_point);
 	if (sid_pos >= route_string.length())
-		return {}; // Did not find the SID exit point, should be impossible, maybe log?
+	{
+		debug_printer(callsign + ": No SID exit during processing");
+		return {};
+	}
 
 	size_t end = route_string.find(' ', sid_pos);
-	end = end == std::string::npos ? sid_pos + maybe_sid.value().exit_point.length() : end + 1;
+	end = end == std::string::npos ? sid_pos + sid.exit_point.length() : end + 1;
 
-	route_string = std::string(flight_plan_data.GetOrigin()) + "/" + maybe_sid->rwy
-		+ " " + maybe_sid->sid
-		+ " " + maybe_sid->exit_point
+	route_string = std::string(flight_plan_data.GetOrigin()) + "/" + sid.rwy
+		+ " " + sid.sid
+		+ " " + sid.exit_point
 		+ " " + route_string.substr(end);
 	flight_plan_data.SetRoute(route_string.c_str());
 
-	return flight_plan_data.AmendFlightPlan() ? maybe_sid.value() : std::optional<SidEntry>{};
+	return flight_plan_data.AmendFlightPlan() ? sid : std::optional<SidEntry>{};
 }
 
 size_t ProcedureAssigner::fetch_sid_allocation() const
@@ -177,14 +194,15 @@ size_t ProcedureAssigner::setup_lara() const
 	return lara_parser.parse_string(allocation_file);
 }
 
-void ProcedureAssigner::reprocess_all() const
+void ProcedureAssigner::reprocess_all()
 {
-	processed->clear();
+	cache.erase(cache.begin(), cache.end());
 }
 
-void ProcedureAssigner::on_disconnect(const EuroScopePlugIn::CFlightPlan& flight_plan) const
+void ProcedureAssigner::on_disconnect(const EuroScopePlugIn::CFlightPlan& flight_plan)
 {
-	processed->erase(std::string(flight_plan.GetCallsign()));
+	if (const auto found = cache.find(std::string(flight_plan.GetCallsign())); found != cache.end())
+		cache.erase(found);
 }
 
 void ProcedureAssigner::set_departure_runways(
@@ -194,22 +212,25 @@ void ProcedureAssigner::set_departure_runways(
 	airports.erase(airports.begin(), airports.end());
 
 
-	for (const auto rwy: active_departure_runways)
+	for (const auto& [fst, snd] : active_departure_runways)
 	{
-		airports.insert(rwy.first);
+		airports.insert(fst);
 	}
+
+	cache.erase(cache.begin(), cache.end());
 }
 
-std::optional<SidEntry> ProcedureAssigner::suggest(const EuroScopePlugIn::CFlightPlan& flight_plan, bool force) const
+std::optional<SidEntry> ProcedureAssigner::suggest(const EuroScopePlugIn::CFlightPlan& flight_plan,
+                                                               bool ignore_already_assigned)
 {
-	if (!force && processed->find(std::string(flight_plan.GetCallsign())) != processed->end())
-		return {}; // Already processed
+	const std::string callsign = flight_plan.GetCallsign();
+	// See if we have it cached
+	if (cache.find(callsign) != cache.end())
+	{
+		return cache.at(callsign);
+	}
 
-	processed->insert(std::string(flight_plan.GetCallsign()));
-
-	if (!should_process(flight_plan, force))
-		return {};
-
+	// Dit not have it cached, recalculate
 	const auto route_text = std::string(flight_plan.GetFlightPlanData().GetRoute());
 	std::string sid_fix;
 	const auto sid_fixes = sid_allocation.fixes_for_airport(flight_plan.GetFlightPlanData().GetOrigin());
@@ -219,7 +240,7 @@ std::optional<SidEntry> ProcedureAssigner::suggest(const EuroScopePlugIn::CFligh
 	     i != SplitIter(); ++i)
 	{
 		auto route_element = boost::copy_range<std::string>(*i);
-		for (auto fix: sid_fixes)
+		for (auto& fix : sid_fixes)
 		{
 			if (route_element.find(fix) != std::string::npos)
 			{
@@ -228,14 +249,22 @@ std::optional<SidEntry> ProcedureAssigner::suggest(const EuroScopePlugIn::CFligh
 			}
 		}
 	}
-	found_sid:
+found_sid:
 
 	if (sid_fix.empty())
+	{
+		debug_printer(callsign + ": No sid fix in suggest");
+		cache.insert_or_assign(callsign, std::optional<SidEntry>{});
 		return {};
+	}
 
 	const auto maybe_runway = get_runway(flight_plan, sid_fix);
 	if (!maybe_runway.has_value())
+	{
+		debug_printer(callsign + ": No RWY in suggest");
+		cache.insert_or_assign(callsign, std::optional<SidEntry>{});
 		return {};
+	}
 
 	const auto& runway = maybe_runway.value();
 
@@ -248,9 +277,11 @@ std::optional<SidEntry> ProcedureAssigner::suggest(const EuroScopePlugIn::CFligh
 
 	const auto areas = lara_parser.get_active(now);
 
-	return sid_allocation.find(flight_plan_data.GetOrigin(),
-	                           sid_fix,
-	                           flight_plan_data.GetDestination(),
-	                           flight_plan_data.GetEngineNumber(),
-	                           runway, now, areas);
+	const auto entry = sid_allocation.find(flight_plan_data.GetOrigin(),
+	                                       sid_fix,
+	                                       flight_plan_data.GetDestination(),
+	                                       flight_plan_data.GetEngineNumber(),
+	                                       runway, now, areas);
+	cache.insert_or_assign(callsign, entry);
+	return std::move(entry);
 }

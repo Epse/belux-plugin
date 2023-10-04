@@ -23,6 +23,9 @@ A third method exists to assign suggestions, this is the `.belux force-sid` comm
 This acts as if the controller clicked the `Assign RWY/SID` tag function for every flight.
 This will override controller choices, be careful.
 
+If at any time these suggestions appear wrong to you, the command `.belux fresh-sid` (not to be confused by `force-sid`) will re-do all the math to suggest procedures.
+This may be helpful in edge cases where a bad suggestions is cached.
+
 #### Restrictions
 
 The plugin will under no circumstance modify the flight plan of a flight matching any of these conditions:

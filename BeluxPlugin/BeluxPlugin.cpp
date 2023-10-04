@@ -43,15 +43,12 @@ map<string, vector<string>> activeArrRunways;
 
 int liege_QNH = 0;
 
-unique_ptr<map<string, SidEntry>> suggestion_cache;
-
 BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY_PLUGIN_NAME, MY_PLUGIN_VERSION,
                                          MY_PLUGIN_DEVELOPER, MY_PLUGIN_COPYRIGHT)
 {
 	versionCheck();
 	loadJSONconfig();
 
-	suggestion_cache = make_unique<map<string, SidEntry>>();
 	procedureAssigner = new ProcedureAssigner([this](const std::string& text)
 	{
 		printDebugMessage("SID", text);
@@ -242,15 +239,9 @@ void BeluxPlugin::ProcessFlightPlans()
 		string dep_airport = fp.GetFlightPlanData().GetOrigin();
 		string callsign = fp.GetCallsign();
 
+		if (function_check_runway_and_sid || force_new_procedure)
 		{
-			const bool in_cache = suggestion_cache->find(string(fp.GetCallsign())) != suggestion_cache->end();
-			const auto sid = (function_check_runway_and_sid || force_new_procedure)
-				                 ? procedureAssigner->process_flight_plan(fp, force_new_procedure)
-				                 : procedureAssigner->suggest(fp, !in_cache);
-			if (sid.has_value())
-			{
-				suggestion_cache->insert_or_assign(string(fp.GetCallsign()), sid.value());
-			}
+			procedureAssigner->process_flight_plan(fp, force_new_procedure);
 		}
 
 
@@ -491,19 +482,19 @@ void BeluxPlugin::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget,
 
 	case TagDefinitions::item_proc_suggestion:
 		{
-			const auto callsign = string(FlightPlan.GetCallsign());
-			const auto suggestion = suggestion_cache->find(callsign) != suggestion_cache->end()
-				? suggestion_cache->at(callsign)
-				: std::optional<SidEntry>{};
-			if (!suggestion.has_value())
+			const auto maybe_suggestion = procedureAssigner->suggest(FlightPlan, true);
+
+			if (!maybe_suggestion.has_value())
 			{
 				strcpy_s(sItemString, 16, "?"); // Indicate an error case
 				break;
 			}
 
+			const auto suggestion = maybe_suggestion.value();
+
 			const string route = FlightPlan.GetFlightPlanData().GetRoute();
-			if (suggestion->rwy != string(FlightPlan.GetFlightPlanData().GetDepartureRwy())
-				|| route.find(suggestion->sid) == std::string::npos)
+			if (suggestion.rwy != string(FlightPlan.GetFlightPlanData().GetDepartureRwy())
+				|| route.find(suggestion.sid) == std::string::npos)
 			{
 				(*pColorCode) = EuroScopePlugIn::TAG_COLOR_INFORMATION;
 			} else
@@ -512,7 +503,7 @@ void BeluxPlugin::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget,
 			}
 
 
-			const string text = suggestion->sid + "/" + suggestion->rwy;
+			const string text = suggestion.sid + "/" + suggestion.rwy;
 			strcpy_s(sItemString, 16, text.c_str());
 			sItemString[15] = '\0'; // Ensure proper null termination
 		}
@@ -785,6 +776,7 @@ bool BeluxPlugin::OnCompileCommand(const char* sCommandLine)
 		printMessage("-", "Belux CLI");
 		printMessage("-", ".belux reload                          - reload json config");
 		printMessage("-", ".belux force-sid                       - force fresh SID/RWY assignment");
+		printMessage("-", ".belux fresh-sid                       - Clear SID cache");
 		printMessage("-", ".belux gate(on/off)                    - enable/disable gate assignment");
 		printMessage("-", ".belux climb(on/off)                   - enable/disable initial climb assignment");
 		printMessage("-", ".belux mach(on/off)                    - enable/disable mach visualisation");
@@ -926,6 +918,12 @@ bool BeluxPlugin::OnCompileCommand(const char* sCommandLine)
 	{
 		procedureAssigner->reprocess_all();
 		force_new_procedure = true;
+		return true;
+	}
+
+	if (boost::algorithm::starts_with(sCommandLine, ".belux fresh-sid"))
+	{
+		procedureAssigner->reprocess_all();
 		return true;
 	}
 
