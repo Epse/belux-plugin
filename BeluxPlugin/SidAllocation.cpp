@@ -17,6 +17,7 @@ size_t SidAllocation::parse_string(const std::string& input) const
 	std::istringstream iss(input);
 	entries->clear();
 
+	// We _have_ to parse this in order, this is important for the rules engine
 	for (std::string line; std::getline(iss, line);)
 	{
 		if (auto maybe_entry = parse_line(line); maybe_entry.has_value())
