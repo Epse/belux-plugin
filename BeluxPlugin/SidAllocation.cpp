@@ -50,11 +50,18 @@ std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::
 			continue;
 		if (!entry.tsa.empty())
 		{
-			for (auto area: active_areas)
+			bool tsa_match = false;
+			for (auto& area: active_areas)
 			{
 				if (entry.tsa.find(area) != std::string::npos)
-					continue;
+				{
+					tsa_match = true;
+					break;
+				}
 			}
+
+			if (tsa_match)
+				continue;
 		}
 
 		return entry;

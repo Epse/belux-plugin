@@ -28,8 +28,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="res\SID_ALLOCATION.txt" />
     <CopyFileToFolders Include="res\TopSkyAreasManualAct.txt">
+      <Filter>Resource Files</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="res\SID_ALLOCATION.txt">
       <Filter>Resource Files</Filter>
     </CopyFileToFolders>
   </ItemGroup>
