@@ -3,7 +3,6 @@
 #include "BeluxUtil.hpp"
 
 #include <algorithm>
-#include <list>
 #include <boost/algorithm/string.hpp>
 #include <utility>
 #include <variant>
@@ -271,17 +270,19 @@ found_sid:
 	const auto flight_plan_data = flight_plan.GetFlightPlanData();
 	time_t raw_time;
 	time(&raw_time);
+	// Add 20 minutes, in seconds
+	raw_time += PREACTIVE_MINUTES * 60;
 	// Get a tm struct for now in UTC
 	tm now;
 	gmtime_s(&now, &raw_time);
 
 	const auto areas = lara_parser.get_active(now);
 
-	const auto entry = sid_allocation.find(flight_plan_data.GetOrigin(),
+	auto entry = sid_allocation.find(flight_plan_data.GetOrigin(),
 	                                       sid_fix,
 	                                       flight_plan_data.GetDestination(),
 	                                       flight_plan_data.GetEngineNumber(),
 	                                       runway, now, areas);
 	cache.insert_or_assign(callsign, entry);
-	return std::move(entry);
+	return entry;
 }

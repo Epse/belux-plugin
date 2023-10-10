@@ -3,11 +3,12 @@
 #include <map>
 #include <set>
 #include <string>
-#include <variant>
 
 #include "EuroScopePlugIn.h"
 #include "SidAllocation.h"
 #include "LaraParser.h"
+
+#define PREACTIVE_MINUTES 20
 
 class ProcedureAssigner
 {

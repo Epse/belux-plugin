@@ -38,4 +38,4 @@ The plugin will under no circumstance modify the flight plan of a flight matchin
 
 #### Data sources
 
-The plugin takes active runways and airports from Euroscope, active TSA/TRA is determined by parsing the `TopSkyAreasManualActivation.txt`.
+The plugin takes active runways and airports from Euroscope, active TSA/TRA is determined by parsing the `TopSkyAreasManualActivation.txt`. It shifts the activation times of these areas forwards by 20 minutes, in an attempt to avoid reroutes on departures and unnecessary long departures.
