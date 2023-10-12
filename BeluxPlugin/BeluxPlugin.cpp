@@ -244,7 +244,6 @@ void BeluxPlugin::ProcessFlightPlans()
 			procedureAssigner->process_flight_plan(fp, force_new_procedure);
 		}
 
-
 		if (activeAirports.find(dep_airport) == activeAirports.end() // IF Not found in belux airport list
 			|| !fp.IsValid() || !fp.GetCorrelatedRadarTarget().IsValid()
 			// OR flightplan has not been loaded/correleted correctly?
@@ -494,7 +493,7 @@ void BeluxPlugin::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget,
 
 			const string route = FlightPlan.GetFlightPlanData().GetRoute();
 			if (suggestion.rwy != string(FlightPlan.GetFlightPlanData().GetDepartureRwy())
-				|| route.find(suggestion.sid) == std::string::npos)
+				|| string(FlightPlan.GetFlightPlanData().GetSidName()) != suggestion.sid)
 			{
 				(*pColorCode) = EuroScopePlugIn::TAG_COLOR_INFORMATION;
 			} else
