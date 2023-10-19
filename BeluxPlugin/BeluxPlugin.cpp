@@ -275,7 +275,7 @@ void BeluxPlugin::ProcessFlightPlans()
 				{
 					CFL = 6000;
 				}
-				else if (QNH[dep_airport] > 960)
+				else if (QNH[dep_airport] > 959)
 				{
 					CFL = 7000;
 				}
