@@ -2,6 +2,21 @@
 
 ## Features
 
+### Initial Climb Selection
+
+The plugin assigns the initial climb for several airports,
+if the flightplan in question is departing from a covered airport,
+the flightplan and radar target are "valid" (in Euroscope terms, valid doesn't mean much here),
+it's not assumed by another controller, not flying and not moving.
+
+It follows the following rules:
+
+- ELLX: FL40
+- EBCI: FL40
+- EBAW: FL30
+- EBKT: FL30
+- EBBR, EBOS or EBLG: FL60 if QNH > 995hPa; FL70 if 959hPa < QNH <= 995; FL80 otherwise
+
 ### SID and Runway Selection
 
 On startup, the plugin will fetch a SID allocation file from the Belux navdata site.
@@ -29,6 +44,7 @@ This may be helpful in edge cases where a bad suggestions is cached.
 #### Restrictions
 
 The plugin will under no circumstance modify the flight plan of a flight matching any of these conditions:
+
 - Clearence flag set
 - Not departing from a Belux airport
 - Invalid flightplan or invalid radar target
