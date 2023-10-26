@@ -1,5 +1,6 @@
 #include "CppUnitTest.h"
 #include "../BeluxPlugin/SidAllocation.h"
+#include "../BeluxPlugin/LaraParser.h"
 #include <fstream>
 #include <string>
 
@@ -24,6 +25,16 @@ namespace BeluxPluginTest
 			SidAllocation allocation;
 			allocation.parse_string(get_allocation_file());
 			return allocation;
+		}
+
+		static LaraParser get_filled_lara()
+		{
+			LaraParser parser;
+			std::ifstream ifs("TopSkyAreasManualAct.txt");
+			std::string activation_file((std::istreambuf_iterator<char>(ifs)),
+				(std::istreambuf_iterator<char>()));
+			parser.parse_string(activation_file);
+			return parser;
 		}
 
 	public:
@@ -116,6 +127,27 @@ namespace BeluxPluginTest
 				Assert::AreNotEqual(std::string("LNO9S"), maybe_sid->sid);
 				Assert::AreEqual(std::string("LNO7E"), maybe_sid->sid);
 			}
+		}
+
+		TEST_METHOD(HandlesMultipleAreas)
+		{
+			const auto allocator = get_filled_allocator();
+			// Date based on bug report
+			tm fake_now{};
+			fake_now.tm_wday = 3; // Wednesday
+			fake_now.tm_mday = 25;
+			fake_now.tm_mon = 9; // October, somehow
+			fake_now.tm_year = 2023;
+			fake_now.tm_hour = 11; // 13:13
+			fake_now.tm_min = 13;
+
+			const LaraParser parser = get_filled_lara();
+			const auto active = parser.get_active(fake_now);
+
+			const auto maybe_sid = allocator.find("EBLG", "LNO", "EDDF", 4, "22L", fake_now, active);
+			Assert::IsTrue(maybe_sid.has_value());
+			Assert::AreNotEqual(std::string("LNO9S"), maybe_sid->sid);
+			Assert::AreEqual(std::string("LNO7E"), maybe_sid->sid);
 		}
 	};
 }

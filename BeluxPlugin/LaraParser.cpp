@@ -1,5 +1,6 @@
 #include "LaraParser.h"
 
+#include <iostream>
 #include <sstream>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string.hpp>
@@ -39,6 +40,10 @@ std::vector<std::string> LaraParser::get_active(const tm& now) const
 	std::vector<std::string> out;
 	for (const auto& entry: *entries)
 	{
+		if (entry.name == std::string("EBTRAS6"))
+		{
+			std::cout << entry.name;
+		}
 		if (is_entry_active(entry, now))
 			out.emplace_back(entry.name);
 	}
@@ -101,7 +106,7 @@ bool LaraParser::is_entry_active(const LaraEntry& entry, const tm& now)
 {
 	// TODO: some buffer time perhaps?
 	// Map sunday to 7 instead of 0 and make it a string
-	const std::string weekday = std::to_string(now.tm_wday ? now.tm_wday > 0 : 7);
+	const std::string weekday = std::to_string(now.tm_wday > 0 ? now.tm_wday : 7);
 	if (entry.weekdays.find(weekday) == std::string::npos)
 		return false; // Incorrect weekday
 
