@@ -1,5 +1,17 @@
 # Belux Euroscope Plugin
 
+## Open Source
+
+The original version of this plugin by Nicola Macoir was published with a license note of GNU GPL.
+On request of a user of this plugin, the source code was published.
+
+This is not a typical Open Source project.
+Expect no response to issues or PRs.
+This project only exists for the benefit of Belux vACC.
+I will try to be a good steward, but keep the above in mind.
+
+All code in here is unless otherwise noted licensed as in the LICENSE file.
+
 ## Features
 
 ### Initial Climb Selection
