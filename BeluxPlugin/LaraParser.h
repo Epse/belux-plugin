@@ -38,6 +38,7 @@ public:
 	size_t parse_string(const std::string& input) const;
 	std::vector<std::string> get_active(const tm& now) const;
 	bool is_active(const std::string& area, const tm& now) const;
+	size_t count() const;
 private:
 	static bool is_entry_active(const LaraEntry& entry, const tm& now);
 	std::unique_ptr<std::vector<LaraEntry>> entries;

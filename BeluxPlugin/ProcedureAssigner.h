@@ -49,7 +49,7 @@ public:
 	 * \brief Reads LARA instructions relative to dll path from TopSky
 	 * \return Amount of parsed LARA entries
 	 */
-	size_t setup_lara() const;
+	size_t setup_lara(bool always = false) const;
 	/**
 	 * \brief Marks all flight plans for processing on next update, regardless of previous state.
 	 */

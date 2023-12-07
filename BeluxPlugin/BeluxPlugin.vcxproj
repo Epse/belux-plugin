@@ -104,7 +104,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>.\BeluxPlugin.def</ModuleDefinitionFile>
-      <AdditionalDependencies>lib\libssl_static.lib;lib\libcrypto_static.lib;lib\libcurld.lib;C:\Program Files (x86)\EuroScope\PlugInEnvironment\EuroScopePlugInDll.lib;C:\Program Files (x86)\EuroScope\EuroScopePlugInDll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lib\libssl_static.lib;lib\libcrypto_static.lib;lib\libcurld.lib;lib\EuroScopePlugInDll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -232,13 +232,13 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\Program Files (x86)\EuroScope\PlugInEnvironment\EuroScopePlugIn.h" />
     <ClInclude Include="BeluxGateEntry.hpp" />
     <ClInclude Include="BeluxGatePlanner.hpp" />
     <ClInclude Include="BeluxPlugin.hpp" />
     <ClInclude Include="BeluxUtil.hpp" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="LaraParser.h" />
+    <ClInclude Include="lib\include\EuroScopePlugIn.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ProcedureAssigner.h" />
     <ClInclude Include="Resource.h" />

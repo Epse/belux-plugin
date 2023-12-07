@@ -366,6 +366,14 @@ void BeluxPlugin::OnTimer(int Counter)
 	{
 		printDebugMessage("API", "fetched weather file " + utils.fetch_weather_file());
 	}
+
+	/*
+	 * Every ten seconds, retry LARA, only if 0 entries are loaded
+	 */
+	if ((Counter % 10) == 0)
+	{
+		procedureAssigner->setup_lara();
+	}
 }
 
 void BeluxPlugin::OnAirportRunwayActivityChanged(void)

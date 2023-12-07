@@ -102,6 +102,11 @@ bool LaraParser::is_active(const std::string& area, const tm& now) const
 	return false; // Nothing found
 }
 
+size_t LaraParser::count() const
+{
+	return this->entries->size();
+}
+
 bool LaraParser::is_entry_active(const LaraEntry& entry, const tm& now)
 {
 	// TODO: some buffer time perhaps?

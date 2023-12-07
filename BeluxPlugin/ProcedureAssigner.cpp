@@ -179,8 +179,11 @@ size_t ProcedureAssigner::fetch_sid_allocation() const
 	return sid_allocation.parse_string(allocation);
 }
 
-size_t ProcedureAssigner::setup_lara() const
+size_t ProcedureAssigner::setup_lara(bool always) const
 {
+	if (!always && lara_parser.count() > 0)
+		return lara_parser.count();
+
 	// Getting the DLL file folder
 	char dll_path_file[_MAX_PATH];
 	GetModuleFileNameA(reinterpret_cast<HINSTANCE>(&__ImageBase), dll_path_file, sizeof(dll_path_file));

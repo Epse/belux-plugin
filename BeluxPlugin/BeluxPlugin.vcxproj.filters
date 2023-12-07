@@ -71,9 +71,6 @@
     <ClInclude Include="BeluxUtil.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Program Files (x86)\EuroScope\PlugInEnvironment\EuroScopePlugIn.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ProcedureAssigner.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -81,6 +78,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LaraParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\include\EuroScopePlugIn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
