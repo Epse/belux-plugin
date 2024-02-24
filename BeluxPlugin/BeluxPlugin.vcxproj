@@ -165,7 +165,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <ModuleDefinitionFile>.\BeluxPlugin.def</ModuleDefinitionFile>
-      <AdditionalDependencies>lib\libssl_static.lib;lib\libcrypto_static.lib;lib\libcurld.lib;C:\Program Files (x86)\EuroScope\PlugInEnvironment\EuroScopePlugInDll.lib;C:\Program Files (x86)\EuroScope\EuroScopePlugInDll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lib\libssl_static.lib;lib\libcrypto_static.lib;lib\libcurld.lib;lib\EuroScopePlugInDll.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>

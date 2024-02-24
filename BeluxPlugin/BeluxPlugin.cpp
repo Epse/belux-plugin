@@ -742,6 +742,10 @@ string BeluxPlugin::GetHttpsRequest(string host, string uri, string request_stri
 			stream << &response;
 		}
 
+		if (stream.str().empty()) {
+			return stream.str();
+		}
+
 		if (expect_long_json && stream.str().back() != ']')
 		{
 			// Read until EOF, writing data to output as we go.
