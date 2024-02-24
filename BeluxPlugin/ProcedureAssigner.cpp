@@ -174,8 +174,7 @@ std::optional<SidEntry> ProcedureAssigner::process_flight_plan(const EuroScopePl
 size_t ProcedureAssigner::fetch_sid_allocation() const
 {
 	const std::string url = "https://beluxvacc.org/files/navigation_department/datafiles/SID_ALLOCATION.txt";
-	const std::string allocation = BeluxUtil::https_fetch_file(
-		"https://beluxvacc.org/files/navigation_department/datafiles/SID_ALLOCATION.txt");
+	const std::string allocation = BeluxUtil::https_fetch_file(url);
 	return sid_allocation.parse_string(allocation);
 }
 

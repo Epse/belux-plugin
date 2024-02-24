@@ -85,7 +85,7 @@ string BeluxUtil::https_fetch_file(string url)
 	// TODO handle null internet_handle
 	HINTERNET internet_handle = InternetOpen("Belux Plugin", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
 	// TODO handle null handle
-	HINTERNET url_handle = InternetOpenUrl(internet_handle, url.c_str(), NULL, 0, 0, NULL);
+	HINTERNET url_handle = InternetOpenUrl(internet_handle, url.c_str(), NULL, 0, INTERNET_FLAG_RELOAD, NULL);
 	// TODO download shit
 	constexpr size_t buffer_block_size = 5120; // 5kiB, should be enough in most cases as a start
 	size_t buffer_size = buffer_block_size;
