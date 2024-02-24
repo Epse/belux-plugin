@@ -53,6 +53,8 @@ This will override controller choices, be careful.
 If at any time these suggestions appear wrong to you, the command `.belux fresh-sid` (not to be confused by `force-sid`) will re-do all the math to suggest procedures.
 This may be helpful in edge cases where a bad suggestions is cached.
 
+This features absolutely relies on every valid SID being in the SID_Allocation file in order to detect when a controller has selected a valid sid and prevent overwriting.
+
 #### Restrictions
 
 The plugin will under no circumstance modify the flight plan of a flight matching any of these conditions:
