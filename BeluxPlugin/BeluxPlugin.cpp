@@ -316,8 +316,7 @@ void BeluxPlugin::OnNewMetarReceived(const char* sStation, const char* sFullMeta
 {
 	if (function_set_initial_climb)
 	{
-		string metar = sFullMetar;
-		ProcessMETAR("EBLG", metar);
+		ProcessMETAR(sStation, sFullMetar);
 	}
 }
 
