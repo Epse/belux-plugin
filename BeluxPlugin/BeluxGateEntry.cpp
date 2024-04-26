@@ -21,7 +21,8 @@ BeluxGateEntry::BeluxGateEntry(string callsign, string airport, string gate) {
 
     if (airport == "EBBR") {
         
-        if (boost::algorithm::starts_with(gate, "MIL") || 
+        if (boost::algorithm::starts_with(gate, "M") ||  // Both M-series and MIL
+			boost::algorithm::starts_with(gate, "A400") || // Speaks for itself I'd say
             boost::algorithm::starts_with(gate, "GA")  || 
             boost::algorithm::starts_with(gate, "9")   ||
             boost::algorithm::starts_with(gate, "5") 
