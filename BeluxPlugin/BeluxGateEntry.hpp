@@ -12,7 +12,6 @@ class BeluxGateEntry
 public:
     BeluxGateEntry();
     BeluxGateEntry(string callsign, string airport, string gate);
-    virtual ~BeluxGateEntry() {};
 
     string callsign;
     string airport;

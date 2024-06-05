@@ -1,17 +1,17 @@
 #include "pch.h"
 #include "BeluxGateEntry.hpp"
 #include <string>
-#include <time.h>
 #include <boost/algorithm/string.hpp>
+#include <utility>
 
 using namespace std;
 
-BeluxGateEntry::BeluxGateEntry() {
-    BeluxGateEntry("DUMMY", "ERR", "ERR");
+BeluxGateEntry::BeluxGateEntry() : BeluxGateEntry(std::string("PLACEHOLDER"), std::string("TEST"), std::string(""))
+{
 }
 
 BeluxGateEntry::BeluxGateEntry(string callsign, string airport, string gate) {
-	this->callsign = callsign;
+	this->callsign = std::move(callsign);
     this->airport = airport;
 	this->gate = gate;
     this->isFetched = true;

@@ -384,7 +384,7 @@ void BeluxPlugin::OnAirportRunwayActivityChanged(void)
 
 void BeluxPlugin::FetchAndProcessGates()
 {
-	gatePlanner.fetch_json(GetGateInfo());
+	gatePlanner.parse_json(GetGateInfo());
 	for (auto iter = gatePlanner.gate_list.begin(); iter != gatePlanner.gate_list.end(); ++iter)
 	{
 		string cs = iter->first;
