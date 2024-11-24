@@ -669,6 +669,7 @@ string BeluxPlugin::SwapGate(string callsign, string gate)
 	request << "POST " << uri << " HTTP/1.1\r\n";;
 	request << "Host: " << host << "\r\n";
 	request << "Content-Type: application/x-www-form-urlencoded\r\n";
+	request << "Authorization: " << AUTH_TOKEN << "\r\n";
 	request << "Content-Length: " << (18 + callsign.length() + gate.length()) << "\r\n\r\n";
 	request << "callsign=" + callsign + "&gate_id=" + gate << "\r\n";
 

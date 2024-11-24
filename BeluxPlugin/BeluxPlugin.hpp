@@ -23,6 +23,10 @@
 #define MY_PLUGIN_COPYRIGHT "GPL v3"
 #define MY_PLUGIN_VIEW_AVISO  "Belux vACC"
 
+#ifndef AUTH_TOKEN
+#define AUTH_TOKEN "Placeholder"
+#endif
+
 using namespace std;
 using namespace EuroScopePlugIn;
 
