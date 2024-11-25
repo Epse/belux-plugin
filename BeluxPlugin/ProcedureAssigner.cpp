@@ -132,7 +132,7 @@ std::optional<SidEntry> ProcedureAssigner::process_flight_plan(const EuroScopePl
 	std::string route_string = flight_plan_data.GetRoute();
 
 	// If route contains something like EBBR/25R
-	if (route_string.find(std::string(flight_plan_data.GetOrigin()) + "/") != std::string::npos)
+	if (!force && route_string.find(std::string(flight_plan_data.GetOrigin()) + "/") != std::string::npos)
 	{
 		// Assume controller executed a manual runway change and abort.
 		return {};
