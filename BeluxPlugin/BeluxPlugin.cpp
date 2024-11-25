@@ -90,6 +90,11 @@ BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY
 	{
 		printDebugMessage("SID", "Caught an exception");
 	}
+
+	if (function_check_runway_and_sid)
+	{
+		printMessage("Functionalities", "Automatic RWY and SID mode is ON! If you do not know what you are doing, turn it off now with .belux rwysidoff");
+	}
 }
 
 BeluxPlugin::~BeluxPlugin()
