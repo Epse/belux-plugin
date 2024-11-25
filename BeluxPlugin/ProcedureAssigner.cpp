@@ -128,6 +128,16 @@ std::optional<SidEntry> ProcedureAssigner::process_flight_plan(const EuroScopePl
 		return {};
 	}
 
+	auto flight_plan_data = flight_plan.GetFlightPlanData();
+	std::string route_string = flight_plan_data.GetRoute();
+
+	// If route contains something like EBBR/25R
+	if (route_string.find(std::string(flight_plan_data.GetOrigin()) + "/") != std::string::npos)
+	{
+		// Assume controller executed a manual runway change and abort.
+		return {};
+	}
+
 	const auto maybe_sid = suggest(flight_plan, force);
 
 	if (!maybe_sid.has_value())
@@ -136,10 +146,8 @@ std::optional<SidEntry> ProcedureAssigner::process_flight_plan(const EuroScopePl
 		return {};
 	}
 
-	const auto sid = maybe_sid.value();
+	const auto& sid = maybe_sid.value();
 
-	auto flight_plan_data = flight_plan.GetFlightPlanData();
-	std::string route_string = flight_plan_data.GetRoute();
 	/*
 	 * We now need to turn our route into something like CIV5C/25R CIV ...
 	 * Whilst keeping in mind our flight plan may be any of the following funsies:
@@ -234,6 +242,7 @@ std::optional<SidEntry> ProcedureAssigner::suggest(const EuroScopePlugIn::CFligh
                                                                bool ignore_already_assigned)
 {
 	const std::string callsign = flight_plan.GetCallsign();
+
 	// See if we have it cached
 	if (cache.find(callsign) != cache.end())
 	{
