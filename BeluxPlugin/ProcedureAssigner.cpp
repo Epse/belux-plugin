@@ -162,8 +162,17 @@ std::optional<SidEntry> ProcedureAssigner::process_flight_plan(const EuroScopePl
 	size_t end = route_string.find(' ', sid_pos);
 	end = end == std::string::npos ? sid_pos + sid.exit_point.length() : end + 1;
 
-	route_string = std::string(flight_plan_data.GetOrigin()) + "/" + sid.rwy
-		+ " " + sid.sid
+	/*
+	 * Use CIV5K/25R instead of EBBR/25R CIV5K to work around a euroscope bug
+	 * that would otherwise clear everything in the route to just past the first fix,
+	 * losing the initial fix irrecoverably and making a mess
+	 * whenever a different runway would be manually assigned.
+	 *
+	 * References:
+	 * - https://forum.vatsim.net/t/euroscope-deletes-initial-fix-on-runway-change/6962
+	 * - https://gitlab.com/belux-vacc/belux-euroscope-plugin/-/issues/5
+	 */
+	route_string = sid.sid + "/" + sid.rwy
 		+ " " + sid.exit_point
 		+ " " + route_string.substr(end);
 	flight_plan_data.SetRoute(route_string.c_str());
