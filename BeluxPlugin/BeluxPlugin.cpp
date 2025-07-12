@@ -570,35 +570,6 @@ std::string BeluxPlugin::GetGateInfo()
 	return response;
 }
 
-void BeluxPlugin::SendDiscordMessage(string msg)
-{
-	const string host = "discord.com";
-	const string uri =
-		"/api/webhooks/892874115172683896/Q7o-SPJCH65q0uQlVBEpq7WpRCAf3Vd9L_AdD3rJyurWq_I95RL_qqtCg2yJhmIOdcgo";
-
-	std::stringstream body;
-	body << "{\"content\": null,\r\n";
-	body << "\"embeds\": [{\r\n";
-	body << "\"title\": \"" << ControllerMyself().GetFullName() << " is requesting backup at " << ControllerMyself().
-		GetCallsign() << "\",\r\n";
-	body << "\"color\": 16711680,\r\n";
-	body << "\"author\": {\"name\" : \"Belux Backup Bot\"},\r\n";
-	body << "\"fields\": [\r\n";
-	body << "{\"name\": \"Message\", \"value\" : \"" << msg << "\",\"inline\" : true}]\r\n";
-	body << "}\r\n]\r\n}\r\n";
-
-	// Form the request.
-	std::stringstream request;
-	request << "POST " << uri << " HTTP/1.1\r\n";;
-	request << "Host: " << host << "\r\n";
-	request << "Content-Type: application/json\r\n";
-	request << "Content-Length: " << body.str().length() << "\r\n\r\n";
-	request << body.str().c_str();
-
-
-	string response = GetHttpsRequest(host, uri, request.str(), true);
-}
-
 void BeluxPlugin::getActiveRunways()
 {
 	map<string, vector<string>> active_dep_runways;
@@ -807,13 +778,6 @@ bool BeluxPlugin::OnCompileCommand(const char* sCommandLine)
 	if (boost::algorithm::starts_with(sCommandLine, ".belux pfp"))
 	{
 		ProcessFlightPlans();
-		return true;
-	}
-
-	if (boost::algorithm::starts_with(sCommandLine, ".belux reqbackup"))
-	{
-		string message = buffer.erase(0, 16);
-		SendDiscordMessage(message);
 		return true;
 	}
 

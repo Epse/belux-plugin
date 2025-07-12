@@ -66,7 +66,6 @@ protected:
 	 */
 	void BeluxPlugin::getActiveRunways();
 	void BeluxPlugin::ProcessFlightPlans();
-	void BeluxPlugin::SendDiscordMessage(string msg);
 	void BeluxPlugin::FetchAndProcessGates();
 	void BeluxPlugin::versionCheck();
 	void BeluxPlugin::loadJSONconfig();
