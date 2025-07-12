@@ -200,16 +200,24 @@ size_t ProcedureAssigner::setup_lara(bool always) const
 	if (!always && lara_parser.count() > 0)
 		return lara_parser.count();
 
-	// Getting the DLL file folder
-	char dll_path_file[_MAX_PATH];
-	GetModuleFileNameA(reinterpret_cast<HINSTANCE>(&__ImageBase), dll_path_file, sizeof(dll_path_file));
-	std::string lara_path = dll_path_file;
-	lara_path.resize(lara_path.size() - strlen("Belux\\Belux.dll"));
-	lara_path += "\\TopSky\\TopSkyAreasManualAct.txt";
-	std::ifstream ifs(lara_path);
-	const std::string allocation_file((std::istreambuf_iterator<char>(ifs)),
-	                                  (std::istreambuf_iterator<char>()));
-	return lara_parser.parse_string(allocation_file);
+	try
+	{
+		// Getting the DLL file folder
+		char dll_path_file[_MAX_PATH];
+		GetModuleFileNameA(reinterpret_cast<HINSTANCE>(&__ImageBase), dll_path_file, sizeof(dll_path_file));
+		std::string lara_path = dll_path_file;
+		lara_path.resize(lara_path.size() - strlen("Belux\\Belux.dll"));
+		lara_path += "\\TopSky\\TopSkyAreasManualAct.txt";
+		std::ifstream ifs(lara_path);
+		const std::string allocation_file((std::istreambuf_iterator<char>(ifs)),
+										  (std::istreambuf_iterator<char>()));
+		return lara_parser.parse_string(allocation_file);
+	} catch (exception &e)
+	{
+		const auto msg = "Could not parse LARA, areas may be inaccurate: " + std::string(e.what());
+		debug_printer(msg);
+		return 0;
+	}
 }
 
 void ProcedureAssigner::reprocess_all()

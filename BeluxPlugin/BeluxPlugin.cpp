@@ -59,6 +59,9 @@ BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY
 	if (procedureAssigner->setup_lara() < 1)
 	{
 		printMessage("SID", "Could not parse LARA");
+	} else
+	{
+		DisplayUserMessage("Belux Plugin", "SID", "Areas loaded", true, true, false, false, false);
 	}
 	processed = new set<string>();
 
