@@ -112,12 +112,12 @@ void BeluxPlugin::versionCheck()
 	DisplayUserMessage("Message", "Belux Plugin", loadingMessage.c_str(), true, true, true, false, false);
 	DisplayUserMessage("Belux Plugin", "Plugin version", loadingMessage.c_str(), true, true, true, false, false);
 
-	if (!boost::algorithm::ends_with(MY_PLUGIN_VERSION, "BETA"))
+	if (std::string(MY_PLUGIN_VERSION).find('-') == std::string::npos)
 	{
-		string latest_version = GetLatestPluginVersion();
+		const string latest_version = GetLatestPluginVersion();
 		if (latest_version != "S_ERR")
 		{
-			if (strcmp(MY_PLUGIN_VERSION, latest_version.c_str()) < 0)
+			if (latest_version != MY_PLUGIN_VERSION)
 			{
 				string message = "You are using an older version of the Belux plugin. Updating to " + latest_version +
 					" is adviced. For safety, API-based functions have been disabled";
@@ -553,9 +553,7 @@ string BeluxPlugin::GetLatestPluginVersion()
 	request << "GET " << uri << " HTTP/1.1\r\n";;
 	request << "Host: " << host << "\r\n\r\n";
 
-	string response = GetHttpsRequest(host, uri, request.str(), false);
-	response = response.substr(response.length() - 2 - 5, 5);
-	return response;
+	return GetHttpsRequest(host, uri, request.str(), false);
 }
 
 std::string BeluxPlugin::GetGateInfo()
