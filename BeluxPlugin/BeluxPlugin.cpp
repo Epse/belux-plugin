@@ -377,9 +377,15 @@ void BeluxPlugin::OnTimer(int Counter)
 	/*
 	 * Every ten seconds, retry LARA, only if 0 entries are loaded
 	 */
-	if ((Counter % 10) == 0)
+	if ((Counter % 10) == 0 && procedureAssigner->area_rules_count() < 1)
 	{
-		procedureAssigner->setup_lara();
+	if (procedureAssigner->setup_lara() < 1)
+	{
+		printMessage("SID", "Could not parse LARA");
+	} else
+	{
+		DisplayUserMessage("Belux Plugin", "SID", "Areas loaded", true, true, false, false, false);
+	}
 	}
 }
 

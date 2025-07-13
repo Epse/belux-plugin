@@ -314,3 +314,8 @@ found_sid:
 	cache.insert_or_assign(callsign, entry);
 	return entry;
 }
+
+size_t ProcedureAssigner::area_rules_count() const
+{
+	return lara_parser.count();
+}

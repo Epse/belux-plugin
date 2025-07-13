@@ -67,4 +67,5 @@ public:
 	 * \return Perhaps a suggestion
 	 */
 	std::optional<SidEntry> suggest(const EuroScopePlugIn::CFlightPlan& flight_plan, bool ignore_already_assigned = false);
+	size_t area_rules_count() const;
 };
