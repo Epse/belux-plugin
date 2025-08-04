@@ -24,7 +24,15 @@
 #define MY_PLUGIN_VIEW_AVISO  "Belux vACC"
 
 #ifndef AUTH_TOKEN
-#define AUTH_TOKEN "Placeholder"
+#pragma message("No AUTH_TOKEN found")
+#define AUTH_SECRET "Placeholder"
+#else
+// Behold, fuckery to quote things
+#define stringify_literal( x ) # x
+#define stringify_expanded( x ) stringify_literal( x )
+#define stringify_with_quotes( x ) stringify_expanded( stringify_expanded( x ) )
+#define AUTH_SECRET stringify_with_quotes( AUTH_TOKEN )
+#pragma message("AUTH_TOKEN is defined to: " AUTH_SECRET )
 #endif
 
 using namespace std;

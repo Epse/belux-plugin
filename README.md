@@ -12,6 +12,18 @@ I will try to be a good steward, but keep the above in mind.
 
 All code in here is unless otherwise noted licensed as in the LICENSE file.
 
+## Building
+
+Building (for x86 targets exclusively, due to Euroscope), can be done via Visual Studio directly.
+For release builds however, we need to specify the secret auth header to interface with Belux APIs.
+This can be provided using a build parameter.
+
+```powershell
+msbuild /p:AuthHeader=AUTH_HEADER_HERE /p:Configuration=Release
+```
+
+Of course, `Release` can be replaced by `Debug` at will.
+
 ## Features
 
 ### Initial Climb Selection
