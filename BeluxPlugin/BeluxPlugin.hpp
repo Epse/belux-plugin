@@ -18,7 +18,7 @@
 
 
 #define MY_PLUGIN_NAME      "Belux"
-#define MY_PLUGIN_VERSION   "1.4.5"
+#define MY_PLUGIN_VERSION   "1.4.6"
 #define MY_PLUGIN_DEVELOPER "Nicola Macoir, Stef Pletinck for Belux vACC"
 #define MY_PLUGIN_COPYRIGHT "GPL v3"
 #define MY_PLUGIN_VIEW_AVISO  "Belux vACC"
@@ -30,8 +30,7 @@
 // Behold, fuckery to quote things
 #define stringify_literal( x ) # x
 #define stringify_expanded( x ) stringify_literal( x )
-#define stringify_with_quotes( x ) stringify_expanded( stringify_expanded( x ) )
-#define AUTH_SECRET stringify_with_quotes( AUTH_TOKEN )
+#define AUTH_SECRET stringify_expanded( AUTH_TOKEN )
 #pragma message("AUTH_TOKEN is defined to: " AUTH_SECRET )
 #endif
 
