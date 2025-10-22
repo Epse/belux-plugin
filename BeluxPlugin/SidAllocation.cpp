@@ -189,7 +189,7 @@ std::optional<std::tuple<bool, tm, char>> SidAllocation::parse_activation_time_l
 	if (!isdigit(line[line.size() - 1]))
 	{
 		zone = line[line.size() - 1];
-		line = line.substr(0, 4);
+		line = line.substr(0, line.size() - 1);
 	}
 
 	int hours = 0;

@@ -6,7 +6,7 @@
 #include <ctime>
 #include <set>
 #include <memory>
-#include <__msvc_chrono.hpp>
+#include <chrono>
 
 struct TimeActivation
 {
@@ -58,6 +58,7 @@ public:
 	 * \param engine_count self-explanatory
 	 * \param now A fakeable reference to the current time
 	 * \param active_areas A vector of active TRA/TSA areas to check against
+	 * \param active_runways A vector of runways in use, that may be blocked. Generally only departure runways.
 	 * \return A SID entry if one matches the provided rules
 	 */
 	std::optional<SidEntry> find(const std::string& adep, const std::string& exit_point, const std::string& ades,
