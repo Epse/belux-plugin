@@ -5,6 +5,7 @@
 #include <string>
 #include <chrono>
 
+
 using namespace std::chrono;
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -166,12 +167,60 @@ namespace BeluxPluginTest
 			Assert::AreEqual(std::string("LNO7E"), maybe_sid->sid);
 		}
 
-		TEST_METHOD(RespectsTiemZones)
+		TEST_METHOD(RespectsTimeZonesPositive)
 		{
+			// DENUT7N gets assigned for RWY19, if between 2345 and 0344L, or 25R is not active.
+			// We will test with 25R active of course
+
+			const auto allocator = get_filled_allocator();
+
+			// This is local. October 1st is winter time, so at 01:05L it should be active. This is 2305Z, so not active if incorrectly converted.
+			tm fake_now{};
+			fake_now.tm_mday = 2;
+			fake_now.tm_mon = 9; // October, somehow
+			fake_now.tm_year = 2023 - 1900;
+			fake_now.tm_hour = 1;
+			fake_now.tm_min = 5;
+			fake_now.tm_isdst = -1;
+			const time_t epoch = mktime(&fake_now);
+			Assert::IsTrue(epoch > 0);
+			const auto clock = system_clock::from_time_t(epoch);
+
+			const LaraParser parser = get_filled_lara();
+			const auto active = parser.get_active(fake_now);
+
+			const auto maybe_sid = allocator.find("EBBR", "DENUT", "EDDF", 2, "19", clock, active, std::vector<std::string>{"25R"});
+			Assert::IsTrue(maybe_sid.has_value());
+			Assert::AreEqual(std::string("DENUT7N"), maybe_sid->sid);
 		}
 
-		TEST_METHOD(RespectsDisallowedRunways)
+		TEST_METHOD(RespectsTimeZonesNegative)
 		{
+			// DENUT7N gets assigned for RWY19, if between 2345 and 0344L, or 25R is not active.
+			// We will test with 25R active of course
+			// This also tests that it respects the 25R being disallowed, otherwise we'd get that
+			// Instead we select DENUT1F, which is F-ictional
+
+			const auto allocator = get_filled_allocator();
+
+			// This is local. October 1st is winter time, so at 03:50L it should not be active. This is 0150Z, so active if incorrectly converted.
+			tm fake_now{};
+			fake_now.tm_mday = 2;
+			fake_now.tm_mon = 9; // October, somehow
+			fake_now.tm_year = 2023 - 1900;
+			fake_now.tm_hour = 3;
+			fake_now.tm_min = 50;
+			fake_now.tm_isdst = -1;
+			const time_t epoch = mktime(&fake_now);
+			Assert::IsTrue(epoch > 0);
+			const auto clock = system_clock::from_time_t(epoch);
+
+			const LaraParser parser = get_filled_lara();
+			const auto active = parser.get_active(fake_now);
+
+			const auto maybe_sid = allocator.find("EBBR", "DENUT", "EDDF", 2, "19", clock, active, std::vector<std::string>{"25R"});
+			Assert::IsTrue(maybe_sid.has_value());
+			Assert::AreNotEqual(std::string("DENUT7N"), maybe_sid->sid);
 		}
 	};
 }

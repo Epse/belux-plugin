@@ -267,8 +267,8 @@ bool SidAllocation::does_activation_match(const std::optional<TimeActivation>& r
 	}
 
 	const auto zoned_now = chrono::zoned_time{ dest_zone, now };
-	const auto ymw = chrono::year_month_weekday{ chrono::floor<chrono::days>(zoned_now.get_sys_time()) };
-	const auto time = chrono::hh_mm_ss(zoned_now.get_sys_time() - chrono::floor<chrono::days>(zoned_now.get_sys_time()));
+	const auto ymw = chrono::year_month_weekday{ chrono::floor<chrono::days>(zoned_now.get_local_time()) };
+	const auto time = chrono::hh_mm_ss(zoned_now.get_local_time() - chrono::floor<chrono::days>(zoned_now.get_local_time()));
 	const auto hours = time.hours().count();
 	const auto minutes = time.minutes().count();
 

@@ -41,6 +41,7 @@ CIV  |   |1|               |               |CIV2L  | EBBR | 19  | F060 |       |
 DENUT|   |1|    0345       |     2044      |DENUT8L| EBBR | 19  | F060 |       |        | | 19
 DENUT|   |1|    2245L      |     0344L     |DENUT7N| EBBR | 19  | F060 |       |        | | 19
 DENUT|   |1|               |               |DENUT7N| EBBR | 19  | F060 |       |        | 25R | 19
+DENUT|   |1|               |               |DENUT1F| EBBR | 19  | F060 |       |        | | FICTIONAL
 ELSIK|   |1|               |               |ELSIK2L| EBBR | 19  | F060 |       | EBTRANA EBTRANB | | 19
 HELEN|   |1|    0345       |     2044      |HELEN6L| EBBR | 19  | F060 |       |        | | 19
 HELEN|   |1|    2045       |     0344      |HELEN6N| EBBR | 19  | F060 |       |        | | 19
