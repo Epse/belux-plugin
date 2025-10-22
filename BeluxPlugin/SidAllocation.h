@@ -6,12 +6,14 @@
 #include <ctime>
 #include <set>
 #include <memory>
+#include <__msvc_chrono.hpp>
 
 struct TimeActivation
 {
 	bool has_weekdays;
 	tm tm_start;
 	tm tm_end;
+	char timezone; /// L for Europe/Brussels, Z for UTC
 };
 
 enum aircraft_class
@@ -31,6 +33,7 @@ struct SidEntry
 	std::string ades; // Should parse the prefixes of = and * too, later
 	std::string rwy;
 	std::string tsa; // Not used in EBBR, will add to others later
+	std::vector<std::string> disallowed_runways;
 };
 
 class SidAllocation
@@ -58,17 +61,18 @@ public:
 	 * \return A SID entry if one matches the provided rules
 	 */
 	std::optional<SidEntry> find(const std::string& adep, const std::string& exit_point, const std::string& ades,
-	                             const int engine_count, const std::string& runway,
-	                             const tm& now, const std::vector<std::string>& active_areas) const;
+		const int engine_count, const std::string& runway,
+		const std::chrono::time_point<std::chrono::system_clock>& now, const std::vector<std::string>& active_areas,
+		const std::vector<std::string>& active_runways) const;
 	std::set<std::string> sids_for_airport(const std::string& adep) const;
 	std::set<std::string> fixes_for_airport(const std::string& airport) const;
 
 private:
 	std::unique_ptr<std::vector<SidEntry>> entries;
-	std::optional<SidEntry> parse_line(const std::string& line) const;
-	std::optional<TimeActivation> parse_time_activation(const std::string& line_start,
-	                                                    const std::string& line_end) const;
-	std::optional<std::pair<bool, tm>> parse_activation_time_line(const std::string& line) const;
+	static std::optional<SidEntry> parse_line(const std::string& line);
+	static std::optional<TimeActivation> parse_time_activation(const std::string& line_start,
+		const std::string& line_end);
+	static std::optional<std::tuple<bool, tm, char>> parse_activation_time_line(std::string line);
 	/**
 	 * \brief Checks if the given ADES matches the entry ADES given under reference.
 	 * These references may contain a * prefix, indicating they will match any ADES that is not the provided one,
@@ -78,5 +82,5 @@ private:
 	 * \return Whether the ADES rules match, as defined above.
 	 */
 	bool does_ades_match(const std::string& reference, const std::string& in) const;
-	static bool does_activation_match(const std::optional<TimeActivation>& reference, const tm& now);
+	static bool does_activation_match(const std::optional<TimeActivation>& reference, const std::chrono::time_point<std::chrono::system_clock>& now);
 };

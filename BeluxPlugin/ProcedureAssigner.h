@@ -8,12 +8,13 @@
 #include "SidAllocation.h"
 #include "LaraParser.h"
 
-#define PREACTIVE_MINUTES 20
+constexpr int PREACTIVE_MINUTES = 20;
 
 class ProcedureAssigner
 {
 private:
-	std::map<std::string, std::vector<std::string>>* departure_runways;
+	const std::map<std::string, std::vector<std::string>>* departure_runways;
+	const std::map<std::string, std::vector<std::string>>* arrival_runways;
 	std::set<std::string> airports;
 	std::map<std::string, std::optional<SidEntry>> cache;
 	std::function<void(const std::string&)> debug_printer;
@@ -59,7 +60,7 @@ public:
 	 * \param flight_plan The disconnected flight plan
 	 */
 	void on_disconnect(const EuroScopePlugIn::CFlightPlan& flight_plan);
-	void set_departure_runways(const std::map<std::string, std::vector<std::string>>& active_departure_runways);
+	void set_runways(const std::map<std::string, std::vector<std::string>>* active_departure_runways, const std::map<std::string, std::vector<std::string>>* active_arrival_runways);
 	/**
 	 * \brief Suggests, but does not assign, a procedure for the provided flight plan, using caching.
 	 * \param flight_plan Flight plan to suggest a procedure for

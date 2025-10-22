@@ -80,7 +80,7 @@ namespace BeluxPluginTest
 
 			const std::vector<std::string> areas;
 			const auto maybe_sid = allocator.find("EBBR", "LNO", "EKCH",
-				4, "25R", fake_now, areas);
+			                                      4, "25R", fake_now, areas);
 
 			Assert::IsTrue(maybe_sid.has_value());
 			Assert::AreEqual(std::string("LNO3K"), maybe_sid->sid);
