@@ -8,14 +8,13 @@
 #include <variant>
 
 bool ProcedureAssigner::should_process(const EuroScopePlugIn::CFlightPlan& flight_plan,
-                                       bool ignore_already_assigned) const
+	bool ignore_already_assigned) const
 {
 	if (flight_plan.GetClearenceFlag())
 		return false; // No reason to change it from under the ATCO
 
 	const auto adep = std::string(flight_plan.GetFlightPlanData().GetOrigin());
-	if (std::find(std::begin(airports), std::end(airports), adep) ==
-		std::end(airports))
+	if (ranges::find(airports, adep) == std::end(airports))
 		return false; // Not an airport we handle
 
 	if (!flight_plan.IsValid() || !flight_plan.GetCorrelatedRadarTarget().IsValid())
@@ -51,10 +50,10 @@ bool ProcedureAssigner::should_process(const EuroScopePlugIn::CFlightPlan& fligh
 }
 
 std::optional<std::string> ProcedureAssigner::get_runway(const EuroScopePlugIn::CFlightPlan& flight_plan,
-                                                         const std::string& sid_fix) const
+	const std::string& sid_fix) const
 {
 	const std::string origin = flight_plan.GetFlightPlanData().GetOrigin();
-	if (departure_runways->find(origin) == departure_runways->end())
+	if (!departure_runways->contains(origin))
 	{
 		return {};
 	}
@@ -69,8 +68,8 @@ std::optional<std::string> ProcedureAssigner::get_runway(const EuroScopePlugIn::
 	if (origin == "EBLG")
 	{
 		// For EBLG, we never assign 22R/04L by default
-		const bool has_04R = std::binary_search(origin_runways.begin(), origin_runways.end(), std::string("04R"));
-		const bool has_22L = std::binary_search(origin_runways.begin(), origin_runways.end(), std::string("22L"));
+		const bool has_04R = ranges::binary_search(origin_runways, std::string("04R"));
+		const bool has_22L = ranges::binary_search(origin_runways, std::string("22L"));
 
 		if (has_04R)
 			return "04R";
@@ -83,11 +82,11 @@ std::optional<std::string> ProcedureAssigner::get_runway(const EuroScopePlugIn::
 
 	// Should only get here at EBBR
 	const bool has_25R = std::binary_search(std::begin(origin_runways), std::end(origin_runways),
-	                                        std::string("25R"));
+		std::string("25R"));
 	const bool has_19 = std::binary_search(std::begin(origin_runways), std::end(origin_runways),
-	                                       std::string("19"));
+		std::string("19"));
 	const bool has_07R = std::binary_search(std::begin(origin_runways), std::end(origin_runways),
-	                                        std::string("07R"));
+		std::string("07R"));
 	const char wtc = flight_plan.GetFlightPlanData().GetAircraftWtc();
 
 	if (has_25R && has_19)
@@ -113,12 +112,13 @@ std::optional<std::string> ProcedureAssigner::get_runway(const EuroScopePlugIn::
 ProcedureAssigner::ProcedureAssigner(std::function<void(const std::string&)> printer)
 {
 	departure_runways = new std::map<std::string, std::vector<std::string>>();
+	arrival_runways = new std::map<std::string, std::vector<std::string>>();
 	debug_printer = std::move(printer);
 }
 
 // TODO: a lot of the data in this loop should really be cached between planes in one iteration...
 std::optional<SidEntry> ProcedureAssigner::process_flight_plan(const EuroScopePlugIn::CFlightPlan& flight_plan,
-                                                               bool force)
+	bool force)
 {
 	const std::string callsign = flight_plan.GetCallsign();
 
@@ -210,9 +210,10 @@ size_t ProcedureAssigner::setup_lara(bool always) const
 		lara_path += "\\TopSky\\TopSkyAreasManualAct.txt";
 		std::ifstream ifs(lara_path);
 		const std::string allocation_file((std::istreambuf_iterator<char>(ifs)),
-										  (std::istreambuf_iterator<char>()));
+			(std::istreambuf_iterator<char>()));
 		return lara_parser.parse_string(allocation_file);
-	} catch (exception &e)
+	}
+	catch (exception& e)
 	{
 		const auto msg = "Could not parse LARA, areas may be inaccurate: " + std::string(e.what());
 		debug_printer(msg);
@@ -231,14 +232,16 @@ void ProcedureAssigner::on_disconnect(const EuroScopePlugIn::CFlightPlan& flight
 		cache.erase(found);
 }
 
-void ProcedureAssigner::set_departure_runways(
-	const std::map<std::string, std::vector<std::string>>& active_departure_runways)
+void ProcedureAssigner::set_runways(
+	const std::map<std::string, std::vector<std::string>>* active_departure_runways, const std::map<std::string, std::
+	vector<std::string>>*active_arrival_runways)
 {
-	(*departure_runways) = active_departure_runways;
+	departure_runways = active_departure_runways;
+	arrival_runways = active_arrival_runways;
 	airports.erase(airports.begin(), airports.end());
 
 
-	for (const auto& [fst, snd] : active_departure_runways)
+	for (const auto& [fst, snd] : *active_departure_runways)
 	{
 		airports.insert(fst);
 	}
@@ -247,12 +250,12 @@ void ProcedureAssigner::set_departure_runways(
 }
 
 std::optional<SidEntry> ProcedureAssigner::suggest(const EuroScopePlugIn::CFlightPlan& flight_plan,
-                                                               bool ignore_already_assigned)
+	bool ignore_already_assigned)
 {
 	const std::string callsign = flight_plan.GetCallsign();
 
 	// See if we have it cached
-	if (cache.find(callsign) != cache.end())
+	if (cache.contains(callsign))
 	{
 		return cache.at(callsign);
 	}
@@ -264,7 +267,7 @@ std::optional<SidEntry> ProcedureAssigner::suggest(const EuroScopePlugIn::CFligh
 
 	typedef boost::split_iterator<std::string::const_iterator> SplitIter;
 	for (SplitIter i = boost::make_split_iterator(route_text, boost::token_finder(boost::is_space()));
-	     i != SplitIter(); ++i)
+		i != SplitIter(); ++i)
 	{
 		auto route_element = boost::copy_range<std::string>(*i);
 		for (auto& fix : sid_fixes)
@@ -303,14 +306,16 @@ found_sid:
 	// Get a tm struct for now in UTC
 	tm now;
 	gmtime_s(&now, &raw_time);
+	const auto chrono_now = std::chrono::system_clock::now();
 
 	const auto areas = lara_parser.get_active(now);
 
-	auto entry = sid_allocation.find(flight_plan_data.GetOrigin(),
-	                                       sid_fix,
-	                                       flight_plan_data.GetDestination(),
-	                                       flight_plan_data.GetEngineNumber(),
-	                                       runway, now, areas);
+	const std::string adep = flight_plan_data.GetOrigin();
+	auto entry = sid_allocation.find(adep,
+		sid_fix,
+		flight_plan_data.GetDestination(),
+		flight_plan_data.GetEngineNumber(),
+		runway, chrono_now, areas, arrival_runways->at(adep));
 	cache.insert_or_assign(callsign, entry);
 	return entry;
 }

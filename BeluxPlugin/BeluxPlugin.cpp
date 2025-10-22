@@ -55,7 +55,7 @@ BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY
 	});
 
 	getActiveRunways();
-	procedureAssigner->set_departure_runways(activeDepRunways);
+	procedureAssigner->set_runways(&activeDepRunways, &activeArrRunways);
 	if (procedureAssigner->setup_lara() < 1)
 	{
 		printMessage("SID", "Could not parse LARA");
@@ -252,10 +252,10 @@ void BeluxPlugin::ProcessFlightPlans()
 			procedureAssigner->process_flight_plan(fp, force_new_procedure);
 		}
 
-		if (activeAirports.find(dep_airport) == activeAirports.end() // IF Not found in belux airport list
+		if (!activeAirports.contains(dep_airport)
 			|| !fp.IsValid() || !fp.GetCorrelatedRadarTarget().IsValid()
 			// OR flightplan has not been loaded/correleted correctly?
-			|| processed->find(callsign) != processed->end() // OR was already processed
+			|| processed->contains(callsign)
 			|| (strcmp(fp.GetTrackingControllerId(), "") != 0 && !fp.GetTrackingControllerIsMe())
 			// OR aircraft is tracked (with exception of aircraft tracked by current controller)
 			|| fp.GetCorrelatedRadarTarget().GetGS() > 5 // OR moving: Ground speed > 5knots
@@ -392,7 +392,7 @@ void BeluxPlugin::OnTimer(int Counter)
 void BeluxPlugin::OnAirportRunwayActivityChanged(void)
 {
 	getActiveRunways();
-	procedureAssigner->set_departure_runways(activeDepRunways);
+	procedureAssigner->set_runways(&activeDepRunways, &activeArrRunways);
 	procedureAssigner->reprocess_all();
 }
 
@@ -475,7 +475,7 @@ void BeluxPlugin::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget,
 			break;
 		{
 			const string cs = FlightPlan.GetCallsign();
-			if (gatePlanner.gate_list.find(cs) != gatePlanner.gate_list.end())
+			if (gatePlanner.gate_list.contains(cs))
 			{
 				if (gatePlanner.gate_list[cs].color != NULL)
 				{
@@ -597,7 +597,7 @@ void BeluxPlugin::getActiveRunways()
 	     rwy = SectorFileElementSelectNext(rwy, SECTOR_ELEMENT_RUNWAY))
 	{
 		const auto ad_name = boost::trim_copy(string(rwy.GetAirportName()));
-		if (active_airports.find(ad_name) == active_airports.end())
+		if (!active_airports.contains(ad_name))
 		{
 			continue; // Inactive AD
 		}

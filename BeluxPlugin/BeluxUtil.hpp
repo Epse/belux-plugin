@@ -47,7 +47,7 @@ public:
 
     static string https_fetch_file(string url);
 
-    map<string, tuple<double, double>> BeluxUtil::locations = {
+    map<string, tuple<double, double>> locations = {
         {"DVR",  {51.160,1.331}},
         {"KOK",  {51.103,2.623}},
         {"FERDI" , {50.877,3.591}},

@@ -51,34 +51,34 @@ class BeluxPlugin :
 public:
 	BeluxPlugin();
 	virtual ~BeluxPlugin();
-	virtual void BeluxPlugin::OnNewMetarReceived(const char* sStation, const char* sFullMetar);
-	virtual void BeluxPlugin::OnFlightPlanFlightPlanDataUpdate(CFlightPlan FlightPlan);
-	virtual void BeluxPlugin::OnFlightPlanDisconnect(CFlightPlan FlightPlan);
-	virtual void BeluxPlugin::OnGetTagItem(EuroScopePlugIn::CFlightPlan FlightPlan, EuroScopePlugIn::CRadarTarget RadarTarget, int ItemCode, int TagData, char sItemString[16], int* pColorCode, COLORREF* pRGB, double* pFontSize);
-	virtual void BeluxPlugin::OnFunctionCall(int FunctionId, const char* sItemString, POINT Pt, RECT Area);
-	virtual bool BeluxPlugin::OnCompileCommand(const char* sCommandLine);
-	virtual void BeluxPlugin::OnTimer(int Counter);
-	virtual void BeluxPlugin::OnAirportRunwayActivityChanged(void);
+	virtual void OnNewMetarReceived(const char* sStation, const char* sFullMetar);
+	virtual void OnFlightPlanFlightPlanDataUpdate(CFlightPlan FlightPlan);
+	virtual void OnFlightPlanDisconnect(CFlightPlan FlightPlan);
+	virtual void OnGetTagItem(EuroScopePlugIn::CFlightPlan FlightPlan, EuroScopePlugIn::CRadarTarget RadarTarget, int ItemCode, int TagData, char sItemString[16], int* pColorCode, COLORREF* pRGB, double* pFontSize);
+	virtual void OnFunctionCall(int FunctionId, const char* sItemString, POINT Pt, RECT Area);
+	virtual bool OnCompileCommand(const char* sCommandLine);
+	virtual void OnTimer(int Counter);
+	virtual void OnAirportRunwayActivityChanged(void);
 
 
 protected:
-	string BeluxPlugin::GetHttpsRequest(string host, string uri, string request, bool expect_long_json);
-	string BeluxPlugin::GetGateInfo();
-	string BeluxPlugin::GetAirportInfo(string airport);
-	string BeluxPlugin::GetLatestPluginVersion();
-	string BeluxPlugin::SwapGate(string callsign, string gate);
-	void BeluxPlugin::ProcessMETAR(string airport, string metar);
+	string GetHttpsRequest(string host, string uri, string request, bool expect_long_json);
+	string GetGateInfo();
+	string GetAirportInfo(string airport);
+	string GetLatestPluginVersion();
+	string SwapGate(string callsign, string gate);
+	void ProcessMETAR(string airport, string metar);
 	/**
 	 * \brief Sets all active runways in the plugin properties
 	 */
-	void BeluxPlugin::getActiveRunways();
-	void BeluxPlugin::ProcessFlightPlans();
-	void BeluxPlugin::FetchAndProcessGates();
-	void BeluxPlugin::versionCheck();
-	void BeluxPlugin::loadJSONconfig();
+	void getActiveRunways();
+	void ProcessFlightPlans();
+	void FetchAndProcessGates();
+	void versionCheck();
+	void loadJSONconfig();
 
-	void BeluxPlugin::printDebugMessage(const string& function, const string& message);
-	void BeluxPlugin::printMessage(const string& topic, const string& message);
+	void printDebugMessage(const string& function, const string& message);
+	void printMessage(const string& topic, const string& message);
 };
 
 inline static bool startsWith(const char* pre, const char* str)

@@ -130,7 +130,7 @@ string BeluxUtil::https_fetch_file(string url)
 tuple<double, double> BeluxUtil::calculate_mach(string callsign, int flightlevel, int gs, double hdg, double lat,
                                                 double lon)
 {
-	if (mach_timeout.find(callsign) == mach_timeout.end() || (get<1>(mach_timeout[callsign]) + 5) < std::time(0) &&
+	if (!mach_timeout.contains(callsign) || (get<1>(mach_timeout[callsign]) + 5) < std::time(0) &&
 		weatherdoc != NULL && !weatherdoc.HasParseError())
 	{
 		const int possibleFL_length = 17;

@@ -30,7 +30,7 @@ void BeluxGatePlanner::parse_json(std::string const& data) {
 				const std::string callsign = entry.key();
 				const std::string gate = std::string(entry.value().as_string());
 				BeluxGateEntry gate_entry(callsign, airport, gate);
-				if (this->gate_list.find(callsign) != this->gate_list.end())
+				if (this->gate_list.contains(callsign))
 				{
 					gate_entry.gate_has_changed = this->gate_list.at(callsign).gate != gate;
 				}

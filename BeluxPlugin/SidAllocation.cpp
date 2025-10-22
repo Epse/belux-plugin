@@ -1,11 +1,14 @@
 #include "pch.h"
 #include "SidAllocation.h"
 
+#include <chrono>
 #include <sstream>
 #include <variant>
 #include <vector>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string.hpp>
+
+namespace chrono = std::chrono;
 
 SidAllocation::SidAllocation()
 {
@@ -28,11 +31,25 @@ size_t SidAllocation::parse_string(const std::string& input) const
 }
 
 std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::string& exit_point,
-                                           const std::string& ades, const int engine_count,
-                                           const std::string& runway,
-                                           const tm& now,
-                                           const std::vector<std::string>& active_areas) const
+                                            const std::string& ades, const int engine_count,
+                                            const std::string& runway,
+                                            const chrono::time_point<chrono::system_clock>& now,
+                                            const std::vector<std::string>& active_areas, const std::vector<std::string>& active_runways) const
 {
+	const auto check_runways = [&active_runways](const SidEntry &entry) {
+		for (const auto &disallowed : entry.disallowed_runways)
+		{
+			for (const auto &active : active_runways)
+			{
+				if (active == disallowed)
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	};
+
 	for (auto entry : *entries)
 	{
 		if (entry.adep != adep)
@@ -46,6 +63,8 @@ std::optional<SidEntry> SidAllocation::find(const std::string& adep, const std::
 		if (engine_count != 4 && entry.aircraft_class == four_engined)
 			continue;
 		if (engine_count == 4 && entry.aircraft_class == non_four_engined)
+			continue;
+		if (!check_runways(entry))
 			continue;
 		if (!does_activation_match(entry.time_activation, now))
 			continue;
@@ -99,7 +118,7 @@ std::set<std::string> SidAllocation::fixes_for_airport(const std::string& airpor
 	return result;
 }
 
-std::optional<SidEntry> SidAllocation::parse_line(const std::string& line) const
+std::optional<SidEntry> SidAllocation::parse_line(const std::string& line)
 {
 	if (boost::algorithm::starts_with(line, "--"))
 		return {}; // Ignore comments
@@ -107,17 +126,20 @@ std::optional<SidEntry> SidAllocation::parse_line(const std::string& line) const
 	/*
 	 * The file format contains 12 columns, separated by pipe characters.
 	 * The columns are:
-	 * P1, P2, C, From time, To time, SID, ADEP, RWY, CFL, ADES, TSA, comment
+	 * P1, P2, C, From time(timezone), To time(timezone), SID, ADEP, RWY, CFL, ADES, TSA, disallowed runways, comment
 	 * these map to the SidEntry fields of:
-	 * exit_point, none, aircraft_class, from_time, to_time, sid, adep, rwy, none, ades, tsa, none
+	 * exit_point, none, aircraft_class, from_time, to_time, sid, adep, rwy, none, ades, tsa, disallowed_runways, none
 	 * the `none` entries are unused columns.
 	 */
 
 	std::vector<std::string> columns;
 	boost::split(columns, line, boost::is_any_of("|"));
 
-	if (columns.size() != 12)
+	if (columns.size() != 13)
 		return {};
+
+	std::vector<std::string> disallowed_runways;
+	boost::split(disallowed_runways, boost::trim_copy(columns[11]), [](char x) {return x == ' '; });
 
 	SidEntry entry = {
 		boost::trim_copy(columns[5]),
@@ -129,13 +151,14 @@ std::optional<SidEntry> SidAllocation::parse_line(const std::string& line) const
 		boost::trim_copy(columns[9]),
 		boost::trim_copy(columns[7]),
 		boost::trim_copy(columns[10]),
+		disallowed_runways,
 	};
 
 	return entry;
 }
 
 std::optional<TimeActivation> SidAllocation::parse_time_activation(const std::string& line_start,
-                                                                   const std::string& line_end) const
+                                                                   const std::string& line_end)
 {
 	const auto parsed_start = parse_activation_time_line(line_start);
 	const auto parsed_end = parse_activation_time_line(line_end);
@@ -143,24 +166,31 @@ std::optional<TimeActivation> SidAllocation::parse_time_activation(const std::st
 	if (!parsed_start.has_value() || !parsed_end.has_value())
 		return {};
 
-	const bool has_weekdays = parsed_start.value().first && parsed_end.value().first;
+	const bool has_weekdays = std::get<0>(parsed_start.value()) && std::get<0>(parsed_end.value());
 	return TimeActivation{
 		has_weekdays,
-		parsed_start.value().second,
-		parsed_end.value().second,
+		std::get<1>(parsed_start.value()),
+		std::get<1>(parsed_end.value()),
+		std::get<2>(parsed_start.value()),
 	};
 }
 
 /**
  * \brief Extracts a singular activation time entry
  * \param line An entry
- * \return bool indicating presence of weekday, tm for other data
+ * \return bool indicating presence of weekday, tm for other data, char for timezone
  */
-std::optional<std::pair<bool, tm>> SidAllocation::parse_activation_time_line(const std::string& line) const
+std::optional<std::tuple<bool, tm, char>> SidAllocation::parse_activation_time_line(std::string line)
 {
-	// Just a time is 4 characters,
+	char zone = 'Z';
+	// Just a time is 4 characters, zone has 5. If 4, assume zone to be Z
 	if (line.size() < 4)
 		return {};
+	if (!isdigit(line[line.size() - 1]))
+	{
+		zone = line[line.size() - 1];
+		line = line.substr(0, line.size() - 1);
+	}
 
 	int hours = 0;
 	int minutes = 0;
@@ -204,9 +234,10 @@ std::optional<std::pair<bool, tm>> SidAllocation::parse_activation_time_line(con
 	tm.tm_min = minutes;
 	tm.tm_wday = wday;
 
-	return std::pair{
+	return std::tuple{
 		has_wday,
 		tm,
+		zone,
 	};
 }
 
@@ -224,38 +255,50 @@ bool SidAllocation::does_ades_match(const std::string& reference, const std::str
 	return false;
 }
 
-bool SidAllocation::does_activation_match(const std::optional<TimeActivation>& reference, const tm& now)
+bool SidAllocation::does_activation_match(const std::optional<TimeActivation>& reference, const chrono::time_point<chrono::system_clock>& now)
 {
 	if (!reference.has_value())
 		return true; // Always active
 
+	auto dest_zone = chrono::locate_zone("UTC");
+	if (reference.value().timezone == 'L')
+	{
+		dest_zone = chrono::locate_zone("Europe/Brussels");
+	}
+
+	const auto zoned_now = chrono::zoned_time{ dest_zone, now };
+	const auto ymw = chrono::year_month_weekday{ chrono::floor<chrono::days>(zoned_now.get_local_time()) };
+	const auto time = chrono::hh_mm_ss(zoned_now.get_local_time() - chrono::floor<chrono::days>(zoned_now.get_local_time()));
+	const auto hours = time.hours().count();
+	const auto minutes = time.minutes().count();
+
 	const auto start = reference.value().tm_start;
 	const auto end = reference.value().tm_end;
 
-	const bool past_start_time = now.tm_hour > start.tm_hour
-		|| (now.tm_hour == start.tm_hour && now.tm_min >= start.tm_min);
-	const bool before_end_time = now.tm_hour < end.tm_hour
-		|| (now.tm_hour == end.tm_hour && now.tm_min <= end.tm_min);
+	const bool past_start_time = hours > start.tm_hour
+		|| (hours == start.tm_hour && minutes >= start.tm_min);
+	const bool before_end_time = hours < end.tm_hour
+		|| (hours == end.tm_hour && minutes <= end.tm_min);
 
 
 	if (reference.value().has_weekdays && start.tm_wday != end.tm_wday)
 	{
-		if (now.tm_wday == start.tm_wday)
+		if (ymw.weekday().c_encoding() == start.tm_wday)
 			return past_start_time;
 
-		if (now.tm_wday == end.tm_wday)
+		if (ymw.weekday().c_encoding() == end.tm_wday)
 			return before_end_time;
 
 		if (start.tm_wday < end.tm_wday)
 		{
-			return now.tm_wday > start.tm_wday && now.tm_wday < end.tm_wday;
+			return ymw.weekday().c_encoding() > start.tm_wday && ymw.weekday().c_encoding() < end.tm_wday;
 		}
 
-		return now.tm_wday > start.tm_wday || now.tm_wday < end.tm_wday;
+		return ymw.weekday().c_encoding() > start.tm_wday || ymw.weekday().c_encoding() < end.tm_wday;
 	}
 
 	// They start and end on the same day and today is not that day.
-	if (reference.value().has_weekdays && now.tm_wday != start.tm_wday)
+	if (reference.value().has_weekdays && ymw.weekday().c_encoding() != start.tm_wday)
 		return false;
 
 	// Do the time
