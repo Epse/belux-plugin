@@ -43,6 +43,7 @@ enum TagDefinitions: int {
 	item_mach_number,
 	function_force_sid,
 	item_proc_suggestion,
+	vspeed,
 };
 
 class BeluxPlugin :
@@ -62,6 +63,7 @@ public:
 
 
 protected:
+	unsigned int vspeed_threshold = 300;
 	string GetHttpsRequest(string host, string uri, string request, bool expect_long_json);
 	string GetGateInfo();
 	string GetAirportInfo(string airport);

@@ -81,3 +81,33 @@ The plugin will under no circumstance modify the flight plan of a flight matchin
 #### Data sources
 
 The plugin takes active runways and airports from Euroscope, active TSA/TRA is determined by parsing the `TopSkyAreasManualActivation.txt`. It shifts the activation times of these areas forwards by 20 minutes, in an attempt to avoid reroutes on departures and unnecessary long departures.
+
+## Config file
+
+Most config file entries are optional. A fully loaded config looks as follows and is located in a file named `belux_config.json` next to the dll.
+
+```json
+{
+    "API_timeout" : 700,
+    "debug_mode" : false,
+    "on_gate_change": "quiet",
+    "functionalities" : {
+        "fetch_gates" : true,
+        "set_initial_climb" : true,
+        "mach_visualisation" : false,
+        "rwy_sid_assigner" : false
+    },
+    "vspeed": {
+        "threshold": 300,
+    }
+}
+```
+
+- `API_timeout` how long we wait for a byte on HTTP API queries
+- `debug_mode` prints a whole lotta info to your Euroscope Chat
+- `on_gate_change` can be `blink`, `quiet` or `none` or overridden per ASR. Sets if there is a message when a gate is changed and if it makes your message box blink
+- `fetch_gates` toggle whether to get gate info and put it in flight strip from Belux API
+- `set_initial_climb` follows some simple logic based on aerodrome and QNH to calculate CFL
+- `mach_visualisation` deprecated
+- `rwy_sid_assigner` if true, automatically edits all visible flightplans departing from a Belux airport to have the suggested SID and RWY. Not recommended
+- `threshold` if absolute value of vertical speed is below this number, the vspeed box and indicator is empty

@@ -8,6 +8,7 @@
 #include <utility>
 #include <iomanip>
 #include <Windows.h>
+#include <cstdio>
 
 using namespace std;
 using namespace EuroScopePlugIn;
@@ -71,6 +72,7 @@ BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY
 	RegisterTagItemType("Mach number", TagDefinitions::item_mach_number);
 	RegisterTagItemFunction("Assign RWY/SID", TagDefinitions::function_force_sid);
 	RegisterTagItemType("Procedure Suggestion", TagDefinitions::item_proc_suggestion);
+	RegisterTagItemType("VSpeed", TagDefinitions::vspeed);
 
 	ProcessMETAR("EBLG", GetAirportInfo("EBLG"));
 	if (function_fetch_gates)
@@ -227,6 +229,13 @@ void BeluxPlugin::loadJSONconfig()
 				function_check_runway_and_sid = document["functionalities"].GetObject()["rwy_sid_assigner"].GetBool();
 				printDebugMessage(
 					"config", "rwy/sid assigner " + string(function_check_runway_and_sid ? "enabled" : "disabled"));
+			}
+		}
+		if (document.HasMember("vspeed"))
+		{
+			if (document["vspeed"].GetObject().HasMember("threshold") && document["vspeed"].GetObject()["threshold"].GetType() == Type::kNumberType)
+			{
+				vspeed_threshold = document["vspeed"].GetObject()["threshold"].GetUint();
 			}
 		}
 	}
@@ -437,6 +446,20 @@ void BeluxPlugin::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget,
 	// Only work on tag items we actually care about.
 	switch (ItemCode)
 	{
+	case TagDefinitions::vspeed:
+		{
+			const auto pos = RadarTarget.GetPosition();
+			const auto prev = RadarTarget.GetPreviousPosition(pos);
+			const auto delta = pos.GetPressureAltitude() - prev.GetPressureAltitude();
+			const auto dt = prev.GetReceivedTime() - pos.GetReceivedTime();
+			const auto val = dt != 0 ? delta * 60 / dt : 0;
+			if (abs(val) >= vspeed_threshold)
+			{
+				// yes yes no rounding idc
+				sprintf_s(sItemString, 16, "%+02d", val / 100);
+			}
+		}
+		break;
 	case TagDefinitions::item_mach_number:
 		if (!function_mach_visualisation)
 			break;
