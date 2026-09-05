@@ -64,6 +64,27 @@ public:
 
 protected:
 	unsigned int vspeed_threshold = 300;
+	UINT8 on_gate_change = 2; // 2: blink. 1: quiet. 0: none
+	bool function_fetch_gates = true;
+	bool function_set_initial_climb = true;
+	bool function_mach_visualisation = true;
+	bool function_check_runway_and_sid = false;
+	bool force_new_procedure = false;
+	
+	int timeout_value = 1000;
+
+	set<string>* processed;
+	set<string> activeAirports;
+
+	BeluxGatePlanner gatePlanner;
+	BeluxUtil utils;
+	ProcedureAssigner* procedureAssigner;
+
+	map<string, vector<string>> activeDepRunways;
+	map<string, vector<string>> activeArrRunways;
+
+	map<string, int> QNH{{"EBLG", 0}, {"EBBR", 0}, {"EBOS", 0}};
+
 	string GetHttpsRequest(string host, string uri, string request, bool expect_long_json);
 	string GetGateInfo();
 	string GetAirportInfo(string airport);

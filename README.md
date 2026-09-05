@@ -19,7 +19,7 @@ For release builds however, we need to specify the secret auth header to interfa
 This can be provided using a build parameter.
 
 ```powershell
-msbuild /p:AuthHeader=AUTH_HEADER_HERE /p:Configuration=Release
+msbuild /p:AuthHeader=AUTH_HEADER_HERE /p:Configuration=Release /p:Platform=x86
 ```
 
 Of course, `Release` can be replaced by `Debug` at will.

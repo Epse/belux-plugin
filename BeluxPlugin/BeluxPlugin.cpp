@@ -20,29 +20,9 @@ bool DEBUG_print = true;
 #else
 bool DEBUG_print = false;
 #endif
-UINT8 on_gate_change = 2; // 2: blink. 1: quiet. 0: none
-bool function_fetch_gates = true;
-bool function_set_initial_climb = true;
-bool function_mach_visualisation = true;
-bool function_check_runway_and_sid = false;
-bool force_new_procedure = false;
-
-int timeout_value = 1000;
 
 // Time (in seconds) before we request new information about this flight from the API.
 constexpr int DATA_RETENTION_LENGTH = 60;
-
-set<string>* processed;
-set<string> activeAirports;
-
-BeluxGatePlanner gatePlanner;
-BeluxUtil utils;
-ProcedureAssigner* procedureAssigner;
-
-map<string, vector<string>> activeDepRunways;
-map<string, vector<string>> activeArrRunways;
-
-map<string, int> QNH{{"EBLG", 0}, {"EBBR", 0}, {"EBOS", 0}};
 
 BeluxPlugin::BeluxPlugin(void) : CPlugIn(EuroScopePlugIn::COMPATIBILITY_CODE, MY_PLUGIN_NAME, MY_PLUGIN_VERSION,
                                          MY_PLUGIN_DEVELOPER, MY_PLUGIN_COPYRIGHT)
