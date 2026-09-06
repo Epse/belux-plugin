@@ -436,7 +436,8 @@ void BeluxPlugin::OnGetTagItem(CFlightPlan FlightPlan, CRadarTarget RadarTarget,
 			if (abs(val) >= vspeed_threshold)
 			{
 				// yes yes no rounding idc
-				sprintf_s(sItemString, 16, "%+02d", val / 100);
+				// width set to 3, because the sign is counted as a digit...
+				sprintf_s(sItemString, 16, "%+03d", val / 100);
 			}
 		}
 		break;

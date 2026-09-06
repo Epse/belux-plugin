@@ -116,7 +116,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(ProjectName).dll" "$(userprofile)\Documents\EuroScope\Plugins\Belux\Belux.dll" || set errorlevel=0</Command>
+      <Command>(copy /Y "$(TargetDir)$(ProjectName).dll" "$(userprofile)\Documents\EuroScope\Plugins\Belux\Belux.dll" &amp;&amp; copy /Y "$(TargetDir)$(ProjectName).dll" "$(TargetDir)Belux.dll") || set errorlevel=0</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -177,7 +177,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)$(ProjectName).dll" "$(userprofile)\Documents\EuroScope\Plugins\Belux\Belux.dll" || set errorlevel=0</Command>
+      <Command>(copy /Y "$(TargetDir)$(ProjectName).dll" "$(userprofile)\Documents\EuroScope\Plugins\Belux\Belux.dll" &amp;&amp; copy /Y "$(TargetDir)$(ProjectName).dll" "$(TargetDir)Belux.dll") || set errorlevel=0</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
